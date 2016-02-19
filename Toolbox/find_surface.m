@@ -72,7 +72,7 @@ switch simulation.version
     case {'8','8.1','8.2'}   
         test.conf=[16,23]; % without or whith comfort model
         test.surfaces=27;
-    case {'8.3'} 
+    case {'8.3','8.4'} 
         test.surfaces=27;
     otherwise
         error('Version non configurée')
