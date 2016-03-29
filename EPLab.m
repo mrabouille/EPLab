@@ -548,7 +548,7 @@ else
 
         if size(params.plan,1) == 1 || params.variables.vars_nb==0
             IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{1,1}));
-            modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(1,:),true);
+            modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(1,:),true,[]);
 
             if params.nb_tir>1
                 IDF_dir = IDF_copie;
@@ -560,7 +560,7 @@ else
         else
             for i=1:params.nb_tir
                 IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{i,1}));
-                modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(i,:),i==1);
+                modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(i,:),i==1,i);
                 barre_avancement(i)
             end
         end

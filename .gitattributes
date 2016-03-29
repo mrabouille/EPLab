@@ -15,3 +15,11 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Matlab Files
+*.m text
+
+*.mat binary
+*.fig binary
+
+*.sql binary

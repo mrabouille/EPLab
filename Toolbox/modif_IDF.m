@@ -1,4 +1,4 @@
-function modif_IDF(IDF_ini,IDF_new,variables,valeurs,test)
+function modif_IDF(IDF_ini,IDF_new,variables,valeurs,test,IDSim)
 %MODIF_IDF copie le fichier IDF_ini dans un nouveau fichier nom_simul 
 % en incluant des modifications.
 %
@@ -142,16 +142,9 @@ else
             % Traitement des notes trouvées
             for k=1:size(A,1)
 
-                % Recherche de la variables dans les entrées
-                rech = strcmp({variables.nom}, A{k,1});
-                if ~any(rech)
-                    if affichage, fprintf('Erreur, variable #%s# non trouvée !\n', A{k,1} );  end
-                    continue
-                end
-                index = min(find(rech)); %id de la variable
 
-                operation=[];
-                % Recherche d'une opération                
+                % Recherche d'une opération  
+                operation=[];              
                 if ~isempty(strfind( '+-*/', A{k,2}(1)))
                     operation = ['V' A{k,2}(1) 'X'];
                     A{k,2}(1)=[];
@@ -164,12 +157,15 @@ else
                     A{k,2} = strjoin(A{k,2},'');
                 end
                 if ~isempty(operation)                    
-                    % remplacement si une variable est presente dans l'operation                    
+                    % remplacement du nom des variables presentes dans l'operation                    
                     for a=1:length({variables.nom})                  
                         if strfind(operation, variables(a).nom)~=0
                             operation = strrep(operation, variables(a).nom, num2str(valeurs(a),'%f') );
                             trouve(a)=true; % La variable est présente
-                        end                            
+                        end
+                    end
+                    if strfind(operation, 'IDSim')~=0
+                        operation = strrep(operation, 'IDSim', num2str(IDSim, '%d') );
                     end
                     operation = strrep(operation, 'V', '%1$f'); % valeur initiale
                     operation = strrep(operation, 'X', '%2$f'); % valeur échantillonné
@@ -181,18 +177,32 @@ else
                     lignes=cell2mat(lignes);
                 end
                 
-                % Identification du type de donnée et mise en forme
-                val = valeurs(index);
-                if strcmpi(variables(index).loi, 'Discret')
-                    chaine = variables(index).limites{val};
-                    if isnumeric(chaine) 
-                        chaine = num2str(chaine, '%f');
+                
+                % Recherche de la variables titre dans les entrées
+                rech = strcmp({variables.nom}, A{k,1});
+                if any(rech) 
+                    % Identification du type de donnée et mise en forme
+                    index = min(find(rech)); %id de la variable                    
+                    if strcmpi(variables(index).loi, 'Discret')
+                        chaine = variables(index).limites{valeurs(index)};
+                        if isnumeric(chaine)
+                            chaine = num2str(chaine, '%f');
+                        else
+                            chaine = char(chaine);
+                        end
                     else
-                        chaine = char(chaine);
+                        chaine = num2str(valeurs(index), '%f');
                     end
+                    
+                elseif strcmp(A{k,1}, 'IDSim')
+                    % La variable correspond a l ID de la simulation
+                    chaine = num2str(IDSim, '%d');
                 else
-                    chaine = num2str(val, '%f');
+                    if affichage, fprintf('Erreur, variable #%s# non trouvée !\n', A{k,1} );  end
+                    continue
                 end
+                
+                
 
 
                 % Ajout de la modification dans la pile
