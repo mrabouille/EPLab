@@ -730,8 +730,6 @@ else
 %         end
     
     
-keyboard
-    
     id_simul = find(simulation.etats<=0);
     nb_simul = length(id_simul);
     if nb_simul==0
@@ -894,7 +892,10 @@ else
         try
                 donnees_brut=extract_csv(file,dates,sorties_ext,resultat.extract_lum);
         catch exception
-            fclose all
+            etape=4;
+            save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
+            
+            fclose('all');
             disp(file)
             rethrow(exception)
         end

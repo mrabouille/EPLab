@@ -89,15 +89,17 @@ if strcmp(idfVer,'.')
     [~,I] = sortrows(appVerNum);
     [~,idMax] = max(I);
     
-    appVer = regexp(appVer{idMax},'^\d+[.]\d+','match');
+    appVer = regexp(appVer{idMax},'^\d+[.]\d+','match','once');
     appDir = appDirPass{idMax};
 else
     % Normal Case: find the first match
     match = cellfun(@(x) strncmpi(x,idfVer, min(length(x),length(idfVer)) ) ,appVer);
     if ~any(match)
         error(['La version du fichier idf (%s) ne correspond a aucune version d''EnergyPlus renseigné(s).' sprintf('\n --> %s',appVer{:})],idfVer)
-    end    
-    appDir = appDirPass{find(match , 1, 'first') };
+    end
+    match = find(match , 1, 'first');
+    appVer = regexp(appVer{match},'^\d+[.]\d+','match','once');
+    appDir = appDirPass{match};
 end
 
 

@@ -210,94 +210,65 @@ end
 
 
 
+% == Energie système ==
 
-% == Echanges du système energétique: kWh par m2 habibable ==
-indicateurs(k).systeme= [sum(resultats.energie.heat(plages(k).index))
-                         sum(resultats.energie.cool(plages(k).index))
-                         sum(resultats.energie.heat(plages(k).index)) + sum(resultats.energie.cool(plages(k).index))];
-if leg
-    legende.indicateurs(k).systeme = {
-        ['Besoins energétiques en chauffage ' plages(k).nom ' [kWh]']
-        ['Besoins energétiques en refroidissement ' plages(k).nom ' [kWh]']
-        ['Besoins energétiques chaud-froid ' plages(k).nom ' [kWh]']};
-end
-
-
-% indicateurs(k).systeme_pic= [max(resultats.energie.heat(plages(k).index))
-%                              max(resultats.energie.cool(plages(k).index))];
-% if leg
-%     legende.indicateurs(k).systeme_pic = {
-%         ['Besoins energétiques en chauffage ' plages(k).nom ' [kW/jour]']
-%         ['Besoins energétiques en refroidissement ' plages(k).nom ' [kW/jour]']};
-% end
-
-
-
-if isfield(resultats,'energie') && isfield(resultats.energie,'PTAC')
-    indicateurs(k).PTACcool= [  sum(resultats.energie.PTACcool.Total(plages(k).index_h))
-                                sum(resultats.energie.PTACcool.Sensible(plages(k).index_h))
-                                sum(resultats.energie.PTACcool.Latent(plages(k).index_h))
-                                max(resultats.energie.PTACcool.Total(plages(k).index_h))];
-    if leg
-        legende.indicateurs(k).PTACcool = {
-            ['PTAC Cooling Total ' plages(k).nom ' [kWh]']
-            ['PTAC Cooling Sensible ' plages(k).nom ' [kWh]']
-            ['PTAC Cooling Latent ' plages(k).nom ' [kWh]']
-            ['PTAC Cooling Peak ' plages(k).nom ' [kW]']};
+if isfield(resultats,'energie')
+    if isfield(resultats.energie,'heat')    
+        indicateurs(k).E_heat= [  mysum(resultats.energie.heat.Total,plages(k).index_h)
+                                  mysum(resultats.energie.heat.Sensible,plages(k).index_h)
+                                  mysum(resultats.energie.heat.Latent,plages(k).index_h)
+                                  mymax(resultats.energie.heat.Total,plages(k).index_h)];
+        if leg
+            legende.indicateurs(k).E_heat = {
+                ['Total Heating Energy ' plages(k).nom ' [kWh]']
+                ['Sensible Heating Energy ' plages(k).nom ' [kWh]']
+                ['Latent Heating Energy ' plages(k).nom ' [kWh]']
+                ['Peak(Hour) Heating Energy ' plages(k).nom ' [kW]']};
+        end
     end
+    
+    if isfield(resultats.energie,'cool')
+        indicateurs(k).E_cool= [  mysum(resultats.energie.cool.Total,plages(k).index_h)
+                                  mysum(resultats.energie.cool.Sensible,plages(k).index_h)
+                                  mysum(resultats.energie.cool.Latent,plages(k).index_h)
+                                  mymax(resultats.energie.cool.Total,plages(k).index_h)];
+        if leg
+            legende.indicateurs(k).E_cool = {
+                ['Total Cooling Energy ' plages(k).nom ' [kWh]']
+                ['Sensible Cooling Energy ' plages(k).nom ' [kWh]']
+                ['Latent Cooling Energy ' plages(k).nom ' [kWh]']
+                ['Peak(Hour) Cooling Energy ' plages(k).nom ' [kW]']};
+        end
+    end
+
 end
 
-if isfield(resultats,'energie') && isfield(resultats.energie,'ILASheat')
-    indicateurs(k).ILASheat= [  sum(resultats.energie.ILASheat.Total(plages(k).index_h))
-                                sum(resultats.energie.ILASheat.Sensible(plages(k).index_h))
-                                sum(resultats.energie.ILASheat.Latent(plages(k).index_h))
-                                max(resultats.energie.ILASheat.Total(plages(k).index_h))];
-    if leg
-        legende.indicateurs(k).ILASheat = {
-            ['ILAS Heating Total ' plages(k).nom ' [kWh]']
-            ['ILAS Heating Sensible ' plages(k).nom ' [kWh]']
-            ['ILAS Heating Latent ' plages(k).nom ' [kWh]']
-            ['ILAS Heating Peak ' plages(k).nom ' [kW]']};
-    end
-end
-if isfield(resultats,'energie') && isfield(resultats.energie,'ILAScool')
-    indicateurs(k).ILAScool= [  sum(resultats.energie.ILAScool.Total(plages(k).index_h))
-                                sum(resultats.energie.ILAScool.Sensible(plages(k).index_h))
-                                sum(resultats.energie.ILAScool.Latent(plages(k).index_h))
-                                max(resultats.energie.ILAScool.Total(plages(k).index_h))];
-    if leg
-        legende.indicateurs(k).ILAScool = {
-            ['ILAS Cooling Total ' plages(k).nom ' [kWh]']
-            ['ILAS Cooling Sensible ' plages(k).nom ' [kWh]']
-            ['ILAS Cooling Latent ' plages(k).nom ' [kWh]']
-            ['ILAS Cooling Peak ' plages(k).nom ' [kW]']};
-    end
-end
 
 
 %% == Temperature ==
+if isfield(resultats,'humdite') && isfield(resultats.humdite,{'Tsurf_int','Tsurf_out'})
+    indicateurs(k).Ts_max = [
+                max(resultats.humdite.Tsurf_int{end}(plages(k).index_h))
+                max(resultats.humdite.Tsurf_out{end}(plages(k).index_h))];
+    if leg
+        legende.indicateurs(k).Ts_max = {
+                ['Max Temperature Inside Face ' plages(k).nom ' [ºC]']
+                ['Max Temperature Outside Face ' plages(k).nom ' [ºC]']};
+    end
 
-indicateurs(k).Ts_max = [
-            max(resultats.humdite.Tsurf_int{end}(plages(k).index_h))
-            max(resultats.humdite.Tsurf_out{end}(plages(k).index_h))];
-if leg
-    legende.indicateurs(k).Ts_max = {
-            ['Max Temperature Inside Face ' plages(k).nom ' [ºC]']
-            ['Max Temperature Outside Face ' plages(k).nom ' [ºC]']};
-end
 
-
-indicateurs(k).Ts_max_hourly_mean = [
-            max( mean (reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h) ,24,[]) ,2 ) )
-            mean( mean (reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h) ,24,[]) ,2 ) )
-            max( mean(reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h) ,24,[]) ,2 )' )
-            mean( mean (reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h) ,24,[]) ,2 ) )];
-if leg
-    legende.indicateurs(k).Ts_max_hourly_mean = {
-            ['Max Hourly Mean Temperature Inside Face ' plages(k).nom ' [ºC]']
-            ['Mean Temperature Inside Face ' plages(k).nom ' [ºC]']
-            ['Max Hourly Mean Temperature Outside Face ' plages(k).nom ' [ºC]']
-            ['Mean Temperature Outside Face ' plages(k).nom ' [ºC]']};
+    indicateurs(k).Ts_max_hourly_mean = [
+                max( mean (reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h) ,24,[]) ,2 ) )
+                mean( mean (reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h) ,24,[]) ,2 ) )
+                max( mean(reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h) ,24,[]) ,2 )' )
+                mean( mean (reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h) ,24,[]) ,2 ) )];
+    if leg
+        legende.indicateurs(k).Ts_max_hourly_mean = {
+                ['Max Hourly Mean Temperature Inside Face ' plages(k).nom ' [ºC]']
+                ['Mean Temperature Inside Face ' plages(k).nom ' [ºC]']
+                ['Max Hourly Mean Temperature Outside Face ' plages(k).nom ' [ºC]']
+                ['Mean Temperature Outside Face ' plages(k).nom ' [ºC]']};
+    end
 end
 
 %% == Bilan enveloppe ==
@@ -490,39 +461,41 @@ if isfield(resultats,'vitrages')
 end
 
 
-% == Performances: Croissance moisissure ==
-if isfield(resultats.humdite,'RHsurf')
-    indicateurs(k).humidite.card=zeros(6,1);    
-    M_0 = 0;            % etat initial du risque
-    Sens_class=2;       % sensibilite du materiau (1=resistant, 2=medium resistant, 3=sensitive,
-    Surf_quality=1;     % qualite de la surface du materiau (0=sawn surface, 1= kiln dried quaqlity)
-    timb_spec=0;        % espece du bois (0= pine, 1= spruce)
-    Nt=sum(plages(k).index)*24;      % nombre de valeurs
-    dt=3600;            % pas de temps des valeurs en seconde
+%% == Performances: Croissance moisissure ==
+if isfield(resultats,'humdite')
+    if isfield(resultats.humdite,'RHsurf')
+        indicateurs(k).humidite.card=zeros(6,1);    
+        M_0 = 0;            % etat initial du risque
+        Sens_class=2;       % sensibilite du materiau (1=resistant, 2=medium resistant, 3=sensitive,
+        Surf_quality=1;     % qualite de la surface du materiau (0=sawn surface, 1= kiln dried quaqlity)
+        timb_spec=0;        % espece du bois (0= pine, 1= spruce)
+        Nt=sum(plages(k).index)*24;      % nombre de valeurs
+        dt=3600;            % pas de temps des valeurs en seconde
 
-    for l=1:6   % Type de parois 
-%         indicateurs(k).humidite.RHsurf_mean = 
-%         indicateurs(k).humidite.Tsurf_mean  = mean(resultats.humdite.RHsurf{k},2)
-        for m=size(resultats.humdite.Tsurf{l},2)
-            [M,Histo] = mould_VTT(M_0,resultats.humdite.Tsurf{l}(:,m),resultats.humdite.RHsurf{l}(:,m),Sens_class,Surf_quality,timb_spec,Nt,dt);
-            indicateurs(k).humidite.card(l) = max(indicateurs(k).humidite.card(l),M);
+        for l=1:6   % Type de parois 
+    %         indicateurs(k).humidite.RHsurf_mean = 
+    %         indicateurs(k).humidite.Tsurf_mean  = mean(resultats.humdite.RHsurf{k},2)
+            for m=size(resultats.humdite.Tsurf{l},2)
+                [M,Histo] = mould_VTT(M_0,resultats.humdite.Tsurf{l}(:,m),resultats.humdite.RHsurf{l}(:,m),Sens_class,Surf_quality,timb_spec,Nt,dt);
+                indicateurs(k).humidite.card(l) = max(indicateurs(k).humidite.card(l),M);
+            end
         end
-    end
-    
-    if leg
-        legende.indicateurs(k).humidite.card = {
-            ['Risque de croissance de moisissure sur les surfaces Nord ' plages(k).nom ' [-]']
-            ['Risque de croissance de moisissure sur les surfaces Sud ' plages(k).nom ' [-]']
-            ['Risque de croissance de moisissure sur les surfaces Est ' plages(k).nom ' [-]']
-            ['Risque de croissance de moisissure sur les surfaces Ouest ' plages(k).nom ' [-]']
-            ['Risque de croissance de moisissure sur les surfaces Plancher ' plages(k).nom ' [-]']
-            ['Risque de croissance de moisissure sur les surfaces Toiture ' plages(k).nom ' [-]']};
-    end
-    
-    indicateurs(k).humidite.max = max(indicateurs(k).humidite.card);
-    if leg
-        legende.indicateurs(k).humidite.max = {
-            ['Risque de croissance de moisissure général ' plages(k).nom ' [-]']};
+
+        if leg
+            legende.indicateurs(k).humidite.card = {
+                ['Risque de croissance de moisissure sur les surfaces Nord ' plages(k).nom ' [-]']
+                ['Risque de croissance de moisissure sur les surfaces Sud ' plages(k).nom ' [-]']
+                ['Risque de croissance de moisissure sur les surfaces Est ' plages(k).nom ' [-]']
+                ['Risque de croissance de moisissure sur les surfaces Ouest ' plages(k).nom ' [-]']
+                ['Risque de croissance de moisissure sur les surfaces Plancher ' plages(k).nom ' [-]']
+                ['Risque de croissance de moisissure sur les surfaces Toiture ' plages(k).nom ' [-]']};
+        end
+
+        indicateurs(k).humidite.max = max(indicateurs(k).humidite.card);
+        if leg
+            legende.indicateurs(k).humidite.max = {
+                ['Risque de croissance de moisissure général ' plages(k).nom ' [-]']};
+        end
     end
 end
 
@@ -663,3 +636,17 @@ function B=nansum(A,dim)
 A(isnan(A))=0;
 B=sum(A,dim);
 
+
+function output = mysum(output,set)
+if length(output)==1 && output(1)==0
+    return
+else
+    output = sum(output(set));
+end
+
+function output = mymax(output,set)
+if length(output)==1 && output(1)==0
+    return
+else
+    output = max(output(set));
+end
