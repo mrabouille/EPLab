@@ -25,7 +25,7 @@ simulation de base
 
 fid = fopen(file);
 if fid == -1, error(file), end
-A = textscan(fid, '%s %*[^\n]', 'HeaderLines',1 , 'Delimiter',',' , 'BufSize' , 16000);
+A = textscan(fid, '%s %*[^\n]', 'HeaderLines',1 , 'Delimiter',',' );
 % textscan(fid, ' %2d/%2d %2d:%2d:%2d %*[^\n]', 'HeaderLines',1 , 'Delimiter','' , 'BufSize' , 16000 , 'CollectOutput' , 1);
 fclose(fid);
 
