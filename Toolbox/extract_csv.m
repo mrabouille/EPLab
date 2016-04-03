@@ -118,7 +118,7 @@ if erreur.etat
         fprintf('- Liste des sorties demandées multiples :\n');
         fprintf('    ''%s'', %d occurances\n',erreur.multi{:});
     end
-    error('Vérifiez les sorties demandées.');
+    error('Vérifiez les sorties demandées. (Voir description ci-dessus)');
 end
 
 nb_heures = size(datas_csv,1);

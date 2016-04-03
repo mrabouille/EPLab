@@ -75,7 +75,7 @@ switch simulation.version
     case {'8.3','8.4'} 
         test.surfaces=27;
     otherwise
-        error('Version non configurée')
+        error('Version non configurée: ''%s''',simulation.version)
 end
 
 nbs_param_surface = 10;  % nombre de colonnes des variables surfaces

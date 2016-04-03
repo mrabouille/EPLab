@@ -128,10 +128,10 @@ switch analyse.type_etude
         
     case 3  %Random Balance Designs
         fprintf('-> Random Balance Designs.\n')
-        if ~isfield(analyse.RBD,'harmonics')
-            analyse.RBD.harmonics=6;
+        if ~isfield(analyse,'RBD') || ~isfield(analyse.RBD,'harmonics')
+            analyse.RBD.harmonics=10;
         end
-        if ~isfield(analyse.RBD,'force')
+        if ~isfield(analyse,'RBD') || ~isfield(analyse.RBD,'force')
             analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
         end
         
