@@ -105,6 +105,9 @@ if ~exist(fullfile(PathName,FileConfig),'file')
 end
 
 % Lecture du fichier
+if ~all(strcmp(strsplit(FileConfig,'.'),genvarname(strsplit(FileConfig,'.'))))
+    error('Invalide file Name: %s',FileConfig)
+end
 FileConfig = fullfile(PathName,FileConfig);
 run(FileConfig)
  
@@ -352,13 +355,7 @@ if etape<4
                         fullfile(PathName, sprintf('%s.idf',simulation.IDF_initial)),
                         fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))};
 
-            [pass,Ep_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
-            if pass==-1
-                error('La version du fichier idf (%s) ne correspond pas aucune version d''EnergyPlus renseigné.',simulation.version)
-            else
-                IDF_dir=IDF_dir{pass};
-                clear pass
-            end
+            [Ep_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
 
             % Copie RunEplus modifié dans le dossier de simulation
             modif_RunEplus(params.rep_simul, Ep_dir);
@@ -374,7 +371,7 @@ if etape<4
             Domus_dir = 
 
    > compare  DomusVersion and IdfVersion ... and by the way, test which path is the good one
-           [pass,Domus_dir,simulation.version]=checkVersionEP(IDF_dir, Domus_dir);
+           [pass,Domus_dir]=checkVersionEP(IDF_dir, Domus_dir);
 
 usefull? i think you only have to check the idf and the domus path 
 Mickael vous pouvez vérifier cette partie du programme,vérification est
