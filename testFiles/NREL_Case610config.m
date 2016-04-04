@@ -2,7 +2,7 @@
 version = '1.8.0';
 % Paramètres généraux de simulation
 local.noms.etude = 'NREL-Case610-test';
-local.nb_proc=2;
+local.nb_proc=7;
 local.start_simul=true;    % Demarre automatiquement les simulations
 local.test_delay=10;       % Intervale en sec. entre les tests sur les résultats de simulation
 
@@ -26,7 +26,7 @@ Ep_dir = {'D:\EnergyPlusV8-4-0\',
           'C:\EnergyPlusV8-5-0\'};
 
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
-params.nb_tir=2;
+params.nb_tir=200;
 
 params.type_ech=4;      % 1:random_global 3:RBD_global 4:LHS-local 5:LHS_global 6:Halton_local 7:Halton_global 8:LPTau_local  9:LPTau_global
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
@@ -34,6 +34,11 @@ params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 local.recap_plan = true;    % compare les variations initiales au variations du plan 
 
 analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD  /  5 sobol
+
+analyse.convergence = true;     % only for RBDFAST & Not for temporal analysis
+analyse.convergence_step = 10;  % increase of simulation number
+analyse.convergence_input = 0;  % check in params.variables.actif // '0' = all inputs
+analyse.convergence_output = 0; % check in resultat.sorties_valide & legende.sorties_all; // '0' = variance max output's
 
 analyse.bootstrap = false;
 analyse.bootstrap_param.ech = params.nb_tir;
