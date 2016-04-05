@@ -1105,7 +1105,7 @@ else
         if isempty(liste_choix)
             % listing des noms présents dans la legende
             liste=listnoms(legende.indicateurs(1),'','indicateurs(1).');
-            liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste),',\n'), ']')   );
+            liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste)',',\n'), ']')   );
 
             % selection des sorties désirées
     %selection = persobox( str2mat(liste_noms))
@@ -1127,13 +1127,13 @@ else
             end
 
             % Selection des legendes de sortie
-            legende.sorties_all=eval( strcat( '[', strjoin(strcat( 'legende.', liste_choix),',\n'), ']')   );
+            legende.sorties_all=eval( strcat( '[', strjoin(strcat( 'legende.', liste_choix)',',\n'), ']')   );
             
             clear maxi m liste liste_noms
         end
-        % Selection des sorties
         
-        resultat.sorties(id,:)=eval( strcat( '[', strjoin(liste_choix,';\n'), ']')   );
+        % Selection des sorties
+        resultat.sorties(id,:)=eval( strcat( '[', strjoin(liste_choix',';\n'), ']')   );
         
         % SAVING: add simulation values
         if isfield(resultat,'save') && resultat.save
