@@ -66,13 +66,9 @@ Séparer les surfaces interieures des surfaces en contact avec l'exterieur
 global simulation
 
 switch simulation.version
-    case '6'
-        test.conf=14;
-        test.surfaces=25;
-    case {'8','8.1','8.2'}   
-        test.conf=[16,23]; % without or whith comfort model
-        test.surfaces=27;
-    case {'8.3','8.4'} 
+
+    case {'8.1','8.2','8.3','8.4','8.5'} 
+        test.conf=[16,25]; % without or whith comfort model
         test.surfaces=27;
     otherwise
         error('Version non configurée: ''%s''',simulation.version)
@@ -148,7 +144,7 @@ while ischar(ligne)
             disp(file)
             error('Une mise à jour de E+ à changer le nombre de variables. Les informations extraites doivent être vérifiées.');
         end
-% Détails de la variable A (en v8)
+% Détails de la variable A (en v8.5)
 %{
 1	Name
 2	Schedule Name
@@ -169,11 +165,13 @@ while ischar(ligne)
 17	MRT Calculation Type
 ---only if comfort model---
 18	Work Efficiency
-19	Clothing
-20	Air Velocity
-21	Fanger Calculation
-22	Pierce Calculation
-23	KSU Calculation
+19	Clothing Insulation Calculation Method
+20  Clothing Insulation Calculation Method Schedule
+21  Clothing
+22	Air Velocity
+23	Fanger Calculation
+24	Pierce Calculation
+25	KSU Calculation
 %}
 
         % Recherche la zone concernée
@@ -181,21 +179,13 @@ while ischar(ligne)
         if isempty(rech), error('La zone décrite pour de confort n''a pas été trouvée !'); end
         id_zone =geometrie.zones{rech,1};
 
-        switch simulation.version
-            case '6'
-                % Id de la zone, Schedule Name, Fanger Calculation=0, Pierce Calculation=0, KSU Calculation=0
-                geometrie.confzones(id_zone,:) = [id_zone A(1) 0 0 0];
-            case {'8','8.1','8.2'}
-                % Id de la zone, Schedule Name, Fanger Calculation, Pierce Calculation, KSU Calculation
-                if size(A,1)==test.conf(1)
-                    geometrie.confzones(id_zone,:) = [id_zone A(1) num2cell(zeros(1,3))];
-                elseif size(A,1)==test.conf(2)
-                    geometrie.confzones(id_zone,:) = [id_zone A(1) num2cell(strcmp(A(21:23),'Yes'))'];
-                else
-                    error('Problème')
-                end
-            otherwise
-                error('Version non configurée')
+        % Id de la zone, Schedule Name, Fanger Calculation, Pierce Calculation, KSU Calculation
+        if size(A,1)==test.conf(1)
+            geometrie.confzones(id_zone,:) = [id_zone A(1) num2cell(zeros(1,3))];
+        elseif size(A,1)==test.conf(2)
+            geometrie.confzones(id_zone,:) = [id_zone A(1) num2cell(strcmp(A(21:23),'Yes'))'];
+        else
+            error('Problème')
         end
         
         ligne  = fgets(fid);

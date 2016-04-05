@@ -357,6 +357,12 @@ if etape<4
 
             [Ep_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
 
+            if ~str2double(simulation.version)>8
+                error('Old releases of EnergyPlus are not supported since V8\nVersion: %s', simulation.version)
+            end
+            if str2double(simulation.version)>8.5
+                error('Version non configurée: ''%s''',simulation.version)
+            end
             % Copie RunEplus modifié dans le dossier de simulation
             modif_RunEplus(params.rep_simul, Ep_dir);
             
@@ -1051,24 +1057,36 @@ else
     end
     clear id_debut id_fin date rep
     
-       keyboard
     
-     %==========================
-       if false
-           load('G:\Marcus\Result_temporel')
-           
-           INI=true;
-           t = 1 ; types = {'LowMass'}
-           v = 11 ; villes= {'Belem','Brasilia','Curitiba','Fortaleza','Porto','Recife','Rio','Sao','Manaus','Belo','Salvador'};
-           p = 1 ; plages= {'Hot30','Hot60'};
-           ['Result_temporel.' types{t} '.' villes{v} '.' plages{p}]
-           
-           Result_temporel.(types{t}).(villes{v}).(plages{p}) = [];
-           % Result_temporel.(types{t}).(villes{v}).plan = params.plan
-           %save('G:\Marcus\Result_temporel', 'Result_temporel')
-       end
-     %==========================
-   %%     
+    
+    % SAVING: Initialisation
+    if isfield(resultat,'save') && resultat.save
+        
+        if isempty(resultat.save_path)
+            resultat.save_path = params.rep_result;
+        end
+        [~,~,ext] = fileparts(resultat.save_path);
+        if isempty(ext)
+            resultat.save_path = fullfile(resultat.save_path,local.noms.indicateurs);
+        elseif ~strcmp(ext,'.mat')
+            error('Wrong extension, check ''resultat.save_path'':\n%s',resultat.save_path)
+        end
+        
+        studyVarName = genvarname(regexprep(local.noms.etude,'[^A-Za-z_0-9\s]','_'));
+        studyPlageName = genvarname(regexprep({resultat.plage.nom},'[^A-Za-z_0-9\s]','_'));
+        
+        if exist(resultat.save_path,'file')
+            load(resultat.save_path,'Result_indicateur')
+            if isfield(Result_indicateur,studyVarName)                
+                if ~strcmp('Yes',questdlg(sprintf('This Study have been saved before.\nDo you want erase the previous values?'),local.noms.etude,'Yes','No','No'))
+                    error('Arrêt par l''utilisateur.')
+                end
+                Result_indicateur.(studyVarName) = [];
+            end
+        end
+        Result_indicateur.(studyVarName).Datas = struct('Plage',{resultat.plage.nom})
+    end
+    
     
     fprintf('Mise en forme des résultats\n');
     resultat.sorties=[];
@@ -1087,7 +1105,7 @@ else
         if isempty(liste_choix)
             % listing des noms présents dans la legende
             liste=listnoms(legende.indicateurs(1),'','indicateurs(1).');
-            liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste),',\n'), ']')   );
+            liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste)',',\n'), ']')   );
 
             % selection des sorties désirées
     %selection = persobox( str2mat(liste_noms))
@@ -1109,40 +1127,38 @@ else
             end
 
             % Selection des legendes de sortie
-            legende.sorties_all=eval( strcat( '[', strjoin(strcat( 'legende.', liste_choix),',\n'), ']')   );
+            legende.sorties_all=eval( strcat( '[', strjoin(strcat( 'legende.', liste_choix)',',\n'), ']')   );
             
             clear maxi m liste liste_noms
         end
+        
         % Selection des sorties
+        resultat.sorties(id,:)=eval( strcat( '[', strjoin(liste_choix',';\n'), ']')   );
         
-        resultat.sorties(id,:)=eval( strcat( '[', strjoin(liste_choix,';\n'), ']')   );
-        
-        barre_avancement('PLUS')
-        
-     %========================== 
-     if exist('INI','var')
-        for idv=fieldnames(indicateurs)'
-            if isfield(Result_temporel.(types{t}).(villes{v}).(plages{p}),idv)
-                Result_temporel.(types{t}).(villes{v}).(plages{p}).(idv{:}) = cat(1,Result_temporel.(types{t}).(villes{v}).(plages{p}).(idv{:}), getfield(indicateurs, idv{:})' );
-            else
-                Result_temporel.(types{t}).(villes{v}).(plages{p}).(idv{:}) = indicateurs.(idv{:})';
-                Result_temporel.(types{t}).(villes{v}).(plages{p}).legende = legende.indicateurs;
+        % SAVING: add simulation values
+        if isfield(resultat,'save') && resultat.save
+            for k=1:length(studyPlageName)
+                for idv=fieldnames(indicateurs(k))'
+                    if isfield(Result_indicateur.(studyVarName).Datas,idv)
+                        Result_indicateur.(studyVarName).Datas(k).(idv{:}) = cat(1,Result_indicateur.(studyVarName).Datas(k).(idv{:}), getfield(indicateurs(k), idv{:})' );
+                    else
+                        Result_indicateur.(studyVarName).Datas(k).(idv{:}) = getfield(indicateurs(k), idv{:})'
+                    end
+                end
             end
         end
-     end
-     %==========================    
 
+        barre_avancement('PLUS')
     end
     
-    
-%%
 
-    
-    
-%     load('G:\SIMUL_JBS\cas620_PTAC_SINGAPOR_median_Tmeteo\extract_mediane')
-%     extract_median{5} = indicateurs;
-%     save('G:\SIMUL_JBS\cas620_PTAC_SINGAPOR_median_Tmeteo\extract_mediane','extract_median', 'datesVecLastY')
-%     dbquit
+    % SAVING: save file
+    if isfield(resultat,'save') && resultat.save
+        Result_indicateur.(studyVarName).Legende = legende.indicateurs;
+        Result_indicateur.(studyVarName).plan = params.plan;
+        save(resultat.save_path,'Result_indicateur')
+    end
+
     
     etape=6;    
     save(fullfile(params.rep_result,local.noms.save))

@@ -145,32 +145,42 @@ switch analyse.type_etude
         analyse.V=var(resultat.sorties(:,resultat.sorties_valide),0,1);
         analyse.SI_rbdfast
        
-% affichage de la convergence
-%         entrees = 3; %1:params.variables.vars_nb
-%         sortie = 4;  % resultat.sorties_valide
-%         clear X Vsimple Msimple SI_rbdfast
-%         pas = 1
-%         analyse.RBD_harmonics = 10
-%         for k=11:600/pas
-%             X(k)=k*pas;
-%             Vsimple(k)=var(resultat.sorties(1:k*pas,sortie),0,1);
-%             Msimple(k)=mean(resultat.sorties(1:k*pas,sortie),1);
-%             SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD_harmonics,[],resultat.sorties(1:k*pas,sortie),params.plan(1:k*pas,entrees));
-%         end
-%         plot(X,Vsimple/Vsimple(end),X,Msimple/Msimple(end),X,SI_rbdfast/SI_rbdfast(end))
-%         legend({'V/V_{max}','M/M_{max}','SI of the most influential input'})
-       
+        % affichage de la convergence
+        if isfield(analyse,'convergence') &&  analyse.convergence
+            if analyse.convergence_input==0
+                analyse.convergence_input = params.variables.vars_index;
+            end
+            if analyse.convergence_output==0
+                [~,IdMaxVar] = max(analyse.V);
+                analyse.convergence_output = find(cumsum(resultat.sorties_valide)==IdMaxVar, 1, 'first');
+            end
+            
+            % clear X Vsimple Msimple SI_rbdfast
+            start = analyse.RBD.harmonics*2+1;
+            steps = start:analyse.convergence_step:params.nb_tir; if rem(params.nb_tir-start,analyse.convergence_step)~=0, steps = [steps params.nb_tir]; end
+            for k=1:length(steps)
+                Vsimple(k,:)=var(resultat.sorties(1:steps(k),analyse.convergence_output),0,1);
+                Msimple(k)=mean(resultat.sorties(1:steps(k),analyse.convergence_output),1);
+                SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD.harmonics,[],resultat.sorties(1:steps(k),analyse.convergence_output),params.plan(1:steps(k),analyse.convergence_input));
+            end
+            figure
+            plot(steps,Vsimple/Vsimple(end),steps,Msimple/Msimple(end),steps,SI_rbdfast)
+            title( analyse.legende_sorties(analyse.convergence_output) )
+            legend(horzcat( {'Var / Final Var','Mean / Final Mean'},strcat( repmat({'SI of '},params.variables.vars_nb,1), analyse.legende_entrees(:,1))') , 'Location','SouthWest')
+            xlabel('Number of simulation')
+
+        end
         
         % Indicateur Bootstrapé
-        if analyse.bootstrap
+        if isfield(analyse,'bootstrap') &&  analyse.bootstrap
             for rep=1:analyse.bootstrap_param.rep
                 % Selection aléatoire de données avec retirage
                 Ind = randi(size(resultat.sorties,1),analyse.bootstrap_param.ech,1);
                 
                 if params.type_ech==3
-                    SIbs_rbdfast(:,:,rep)=rbd_fast(1,true,analyse.RBD_harmonics,params.index_rbd_fast(Ind,:),resultat.sorties(Ind,:));
+                    SIbs_rbdfast(:,:,rep)=rbd_fast(1,true,analyse.RBD.harmonics,params.index_rbd_fast(Ind,:),resultat.sorties(Ind,:));
                 else
-                    SIbs_rbdfast(:,:,rep)=rbd_fast(1,true,analyse.RBD_harmonics,[],resultat.sorties(Ind,:),params.plan(Ind,1:params.variables.vars_nb));
+                    SIbs_rbdfast(:,:,rep)=rbd_fast(1,true,analyse.RBD.harmonics,[],resultat.sorties(Ind,:),params.plan(Ind,1:params.variables.vars_nb));
                 end
             end
             analyse.SIbs_rbdfast_mean = mean(SIbs_rbdfast,3);
