@@ -35,22 +35,24 @@ local.recap_plan = true;    % compare les variations initiales au variations du 
 
 analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD  /  5 sobol
 
-analyse.convergence = true;     % only for RBDFAST & Not for temporal analysis
+% Specific properties: RBDFAST
+% analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
+% analyse.RBD.harmonics=10;
+
+% Convergence graph
+analyse.convergence = false;     % only for RBDFAST & Not for temporal analysis
 analyse.convergence_step = 10;  % increase of simulation number
 analyse.convergence_input = 0;  % check in params.variables.actif // '0' = all inputs
 analyse.convergence_output = 0; % check in resultat.sorties_valide & legende.sorties_all; // '0' = variance max output's
 
+% Bootstrap analysis
 analyse.bootstrap = false;
 analyse.bootstrap_param.ech = params.nb_tir;
 analyse.bootstrap_param.rep = 1000;
 analyse.bootstrap_param.save = true;
 
-%analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
-%analyse.RBD.harmonics=10;
 
-resultat.extract_lum=false;
-
-% DEFINIR PLAGE
+% Study ranges
 resultat.plage(1).nom = 'HotMonth';
 resultat.plage(1).debut = '01/07';
 resultat.plage(1).fin = '31/07';
@@ -60,8 +62,15 @@ resultat.plage(2).nom = 'ColdMonth';
 resultat.plage(2).debut = '01/01';
 resultat.plage(2).fin = '31/01';
 resultat.plage(2).temporel = false;
-        
-    
+
+resultat.extract_lum=false;
+
+
+% Saving of all indicateur results
+resultat.save = false;      % save the values calculated
+resultat.save_path = '';    % path or mat-file to save the values (several studies can be added in the same file)
+
+
 % Configuration statistique des entrées météo
 % fichier 'unique' / multiples 'liste' / personalisé: 'plan' / appel module: 'module'           
 params.EPW_type = 'unique';
@@ -188,6 +197,7 @@ local.noms.result= 'resultats_';
 local.noms.simul = 'simulations_';
 local.noms.image = 'images';
 local.noms.save = 'analyse.mat';
+local.noms.indicateurs = 'results_indicateur.mat';
 local.noms.toolsPath = 'Toolbox';
 
 % Paramètres d'affichage
