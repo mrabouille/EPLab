@@ -164,8 +164,8 @@ else
                             trouve(a)=true; % La variable est présente
                         end
                     end
-                    if strfind(operation, 'IDSim')~=0
-                        operation = strrep(operation, 'IDSim', num2str(IDSim, '%d') );
+                    if strfind(operation, '$IDSIM$')~=0
+                        operation = strrep(operation, '$IDSIM$', num2str(IDSim, '%d') );
                     end
                     operation = strrep(operation, 'V', '%1$f'); % valeur initiale
                     operation = strrep(operation, 'X', '%2$f'); % valeur échantillonné
@@ -194,7 +194,7 @@ else
                         chaine = num2str(valeurs(index), '%f');
                     end
                     
-                elseif strcmp(A{k,1}, 'IDSim')
+                elseif strcmp(A{k,1}, '$IDSIM$')
                     % La variable correspond a l ID de la simulation
                     chaine = num2str(IDSim, '%d');
                 else

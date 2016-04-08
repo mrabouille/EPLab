@@ -301,6 +301,9 @@ switch analyse.type_etude
 %}
 end
 
+
+% Code for Temporal analysis of RBD FAST
+% See also end of EPLab\EPLab.m
 if false
     warning('Tambouille perso !!!!!!!!')
     X = params.plan((simulation.etats>=2),1:params.variables.vars_nb);

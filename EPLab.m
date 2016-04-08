@@ -110,7 +110,10 @@ if ~all(strcmp(strsplit(FileConfig,'.'),genvarname(strsplit(FileConfig,'.'))))
 end
 FileConfig = fullfile(PathName,FileConfig);
 run(FileConfig)
- 
+
+if ~strcmp(EPLab_version, '1.8.0')
+    error('Wrong version of the config file.')
+end
 
 %% Initialisation
 
@@ -745,12 +748,12 @@ else
         fprintf('Simulation.\n-> %d fichier(s) en %d lot(s).\n',nb_simul, min(nb_simul,local.nb_proc));
         switch upper(params.model)
             case {'E+','EP','ENERGYPLUS'}
-                EplusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.start_simul);
+                EplusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.auto_start);
             case {'DOMUS'}
                 % Les modifications appostées par Lais Lagos 
                 
             % > you have to add the 'Domus_dir' in the function
-%                DomusMulti(params.rep_simul, local.IDF_dir ,local.nb_proc,local.start_simul);
+%                DomusMulti(params.rep_simul, local.IDF_dir ,local.nb_proc,local.auto_start);
                 error('Tem que definir o modelo !')
         
             otherwise
@@ -759,7 +762,7 @@ else
         etape=4;
         save(fullfile(params.rep_result,local.noms.save))
 
-        if isfield(local, 'start_simul') && local.start_simul==false
+        if isfield(local, 'auto_start') && local.auto_start==false
             dos(sprintf('Explorer /e,/select,%s &',fullfile(params.rep_simul,'SimMulti.bat')));
             error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.');
         end
@@ -1110,14 +1113,21 @@ else
             % selection des sorties désirées
     %selection = persobox( str2mat(liste_noms))
             maxi=0;  for m=liste', maxi = max(maxi,length(m{:}));  end
-            [selection,ok] = listdlg('Name', 'Sorties à étudier',...
-                                    'PromptString','Sélection des sorties :',...
-                                    'SelectionMode','multiple',...
-                                    'ListString',liste,...
-                                    'ListSize', [6*maxi 15*(length(liste)+1)]);
-
-            if ok==0
-                error('Arrêt par l''utilisateur.')
+            
+            while true
+                [selection,ok] = listdlg('Name', 'Sorties à étudier',...
+                                        'PromptString','Sélection des sorties :',...
+                                        'SelectionMode','multiple',...
+                                        'ListString',liste,...
+                                        'ListSize', [6*maxi 15*(length(liste)+1)]);
+                if ok==0
+                    error('Arrêt par l''utilisateur.')
+                end
+                
+                % For temporel, we allow only one output.
+                if ~any([resultat.plage.temporel]) || length(selection)==1
+                    break
+                end
             end
     
             % listing réduit integrant toutes les plages d'étude
@@ -1480,22 +1490,8 @@ disp('Fin !!!')
 
 
 
-%fichier = fullfile(params.rep_result,sprintf('%s.mat',params.liste_fichier{1}));
-%aff_resultats(fichier)
 
-% sortie_ref = 11;
-% nb_sortie = size(resultat.sorties,2)/2;
-% for l=0:1
-%     for k=1:nb_sortie
-%         
-%         plot(resultat.sorties(:,sortie_ref+nb_sortie*l),resultat.sorties(:,k+nb_sortie*l), '.')
-%         set(get(gca,'Xlabel'), 'String',legende.sorties_all{sortie_ref+nb_sortie*l}, 'FontSize', local.images.fontsize)
-%         set(get(gca,'Ylabel'),'String',legende.sorties_all{k+nb_sortie*l}, 'FontSize', local.images.fontsize)
-%         pause
-%     end
-% end
-
-keyboard
+% Save sensitivity index results for MetaModel
 if false
     for s=1:length(analyse.PC_Infos)
         if isempty(analyse.PC_Infos(s).GSA)
@@ -1518,18 +1514,23 @@ if false
 end
 
 
+
+% Code for Temporal analysis of RBD FAST
+% See also end of EPLab\Toolbox\commun_analyse.m
 if false
     warning('Tambouille perso !!!!!!!!')
     % utilisation des variances via les indices:    
-    analyse.SI_rbdfast = bsxfun(@times, analyse.SI_rbdfast, analyse.V);
+    analyse.VI_rbdfast = bsxfun(@times, analyse.SI_rbdfast, analyse.V);
     % utilisation des signs:
-    analyse.SI_rbdfast(:,1) = analyse.SI_rbdfast(:,1).*analyse.signe(:,1);
-    for a=2:size(analyse.SI_rbdfast,2)
-        analyse.SI_rbdfast(:,a) = analyse.SI_rbdfast(:,a-1) + analyse.SI_rbdfast(:,a).*analyse.signe(:,a);
+    analyse.VI_rbdfast(:,1) = analyse.VI_rbdfast(:,1).*analyse.signe(:,1);
+    for a=2:size(analyse.VI_rbdfast,2)
+        analyse.VI_rbdfast(:,a) = analyse.VI_rbdfast(:,a-1) + analyse.VI_rbdfast(:,a).*analyse.signe(:,a);
     end
 
 end
 
+
+keyboard
 if any([resultat.plage.temporel])
     % Création du répertoire de destination
     rep_image = fullfile(params.rep_result,[local.noms.image '_temporel_diff']);
