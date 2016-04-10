@@ -15,19 +15,19 @@ params.variables.infos = cell2struct(sortrows({
                 1, 'FloorInsulResist', 'GaussianR', [25.075 10], []
                 1, 'RoofInsulThick', 'GaussianR', [0.1118 10], []
                 0, 'GroundReflec', 'GaussianR', [0.2 50], [0 1] 
-                1, 'WindowRatio', 'Gaussian', [0.9 0.1], []
+                1, 'WindowRatio', 'Gaussian', [0.9 0.1], [0 1]
 },-1),...
 {'actif', 'nom' 'loi' 'moments' 'limites'}, 2);
 
 
 % Legende des variables
-                %Nom,       Label,      LabelCourt,         Unités
+                %Nom,       Label Long,     Label Court,	Unités
 local.vars_names=sortrows(	{
-                'WallInsulThick', 'Wall Insul. Thickness', 'Thickness of the Wall Insulation', '[m]';
-                'FloorInsulResist', 'Floor Insul. Resist.', 'Thermal Resistance of the Floor Insulation', '[m^2.K/W]';
-                'RoofInsulThick', 'Roof Insul. Thickness', 'Thickness of the Roof Insulation', '[m]';
-                'GroundReflec', 'Ground Reflec.', 'Ground Reflectance value', '[]'; 
-                'WindowRatio', 'Window Size', 'Ratio of initial Window area', '[]';
+                'WallInsulThick', 'Thickness of the Wall Insulation', 'Wall Insul. Thickness', '[m]';
+                'FloorInsulResist', 'Thermal Resistance of the Floor Insulation', 'Floor Insul. Resist.', '[m^2.K/W]';
+                'RoofInsulThick', 'Thickness of the Roof Insulation', 'Roof Insul. Thickness', '[m]';
+                'GroundReflec', 'Ground Reflectance value', 'Ground Reflec.', '[]'; 
+                'WindowRatio', 'Ratio of initial Window area', 'Window Size', '[]';
 },3);
 
 
@@ -148,7 +148,7 @@ local.test_delay=10;	% Intervale en sec. entre les tests sur les résultats de si
 
 %% OUTPUT SHAPINGS
 resultat.extract_lum=false;
-%resultat.analyse_temporel = 1;     %false/0 or ID of the range
+resultat.range_temporal = 0;	%To run a temporal analysis define ID of the range, otherwise 0 
 
 % Study ranges
 resultat.plage(1).nom = 'HotMonth';
