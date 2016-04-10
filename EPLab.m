@@ -90,17 +90,17 @@ local=[]; params=[]; simulation=[]; resultat=[]; geometrie=[]; analyse=[]; affic
 
 % Chargement d'un fichier de configuration
 if ~exist('FileConfig','var')
-    [FileConfig,PathName] = uigetfile('*config*.m'); %,'Select file to open',PathName
+    [FileConfig,LocalPath] = uigetfile('*config*.m'); %,'Select file to open',LocalPath
     if isequal(FileConfig,0)
         error('Arrêt par l''utilisateur.')
     end
 else
-    [PathName,FileConfig,ext] = fileparts(FileConfig);
+    [LocalPath,FileConfig,ext] = fileparts(FileConfig);
     FileConfig = [FileConfig,ext];
-    if isempty(PathName), PathName=pwd; end
+    if isempty(LocalPath), LocalPath=pwd; end
     clear ext
 end
-if ~exist(fullfile(PathName,FileConfig),'file')
+if ~exist(fullfile(LocalPath,FileConfig),'file')
     error('Fichier de configuration non trouvé.')
 end
 
@@ -108,7 +108,7 @@ end
 if ~all(strcmp(strsplit(FileConfig,'.'),genvarname(strsplit(FileConfig,'.'))))
     error('Invalide file Name: %s',FileConfig)
 end
-FileConfig = fullfile(PathName,FileConfig);
+FileConfig = fullfile(LocalPath,FileConfig);
 run(FileConfig)
 
 if ~strcmp(EPLab_version, '1.8.0')
@@ -121,22 +121,22 @@ end
 addpath(genpath(fullfile(pwd,local.noms.toolsPath)),'-begin')
 
 % Recherche du fichier de sauvegarde
-if exist(fullfile(PathName,local.noms.save) ,'file')
+if exist(fullfile(LocalPath,local.noms.save) ,'file')
 %=== Le fichier config est dans le repertoire de résultat ===
-    loc = strfind( PathName, [local.noms.result local.noms.etude]);
+    params.rep_result=LocalPath;
+    loc = strfind( LocalPath, [local.noms.result local.noms.etude]);
     if isempty(loc)
         error('Le nom du repertoire ne corespond pas au nom de l''étude')
     end
     load_file=true;
-    params.rep_result=PathName;
-    PathName = PathName(1:loc-1);
+    LocalPath = LocalPath(1:loc-1);
     clear loc
 else
 %=== Le fichier config n'est pas dans un repertoire de résultat ===
 
     % Répertoires des résultats et des simulations
-    params.rep_result=fullfile(PathName,[local.noms.result local.noms.etude]);
-    params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+    params.rep_result=fullfile(LocalPath,[local.noms.result local.noms.etude]);
+    params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
 
     % Vérification des sous-répertoires -> RAZ / Sauvegarde / Chargement
     exist_result = size(dir(params.rep_result),1)>2;
@@ -216,14 +216,14 @@ if exist('load_file','var') && load_file
     if etape == 1
         % Reprise du début: pas de chargement de données sauvegardées
         INIT=true;
-        params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+        params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
     end
     if etape >= 2
         % Chargement des données générales
         load(fullfile(params.rep_result,local.noms.save), 'params')
         % Mise à jour des répertoires 'résultats' et 'simulations'
-        params.rep_result=fullfile(PathName,[local.noms.result local.noms.etude]);
-        params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+        params.rep_result=fullfile(LocalPath,[local.noms.result local.noms.etude]);
+        params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
         
         % ?
         if etape<3 && strcmp(params.EPW_type,'liste')
@@ -356,7 +356,7 @@ if etape<4
         case {'E+','EP','ENERGYPLUS'}
             % Test Version E+
             IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
-                        fullfile(PathName, sprintf('%s.idf',simulation.IDF_initial)),
+                        fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
                         fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))};
 
             [Ep_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
@@ -375,7 +375,7 @@ if etape<4
 %{        
    > where is the idf you are looking for ? (list of possible path)
            IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
-                       fullfile(PathName, sprintf('%s.idf',simulation.IDF_initial)),
+                       fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
                        fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))}; 
    > where is the domus.exe // Le domus.exe on vérifie le fichier config.m
             Domus_dir = 
@@ -396,7 +396,7 @@ Domus_dir = Domus_dir{1}
            end
           else
             if ~exist('IDF_dir','var') 
-               [IDF_dir,PathName] = uigetfile('*config*.m');
+               [IDF_dir,LocalPath] = uigetfile('*config*.m');
              if isequal(IDF_dir,0)
                 error('Fichier de configuration non trouvé.')
         end
