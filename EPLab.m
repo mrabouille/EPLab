@@ -202,7 +202,7 @@ if exist('load_file','var') && load_file
                     '4/ Extraction',...
                     '5/ Mise en forme',...
                     '6/ Analyse',...
-                    '7/ Interface'};
+                    '7/ Fin'};
     [etape,ok] = listdlg('ListString',liste_etapes(1:etape),...
                     'SelectionMode','single',...
                     'ListSize',[160 100],...
@@ -421,16 +421,19 @@ Domus_dir = Domus_dir{1}
                     'Répertoire :\t%s\nFichier :\t%s\n'],...
                     fullfile ( simulation.EPW.path),...
                     [simulation.EPW.name{1} '.epw']);
+            elseif exist ( fullfile (LocalPath, [simulation.EPW.name{1} '.epw']) ,'file' )
+                simulation.EPW.path = fullfile (LocalPath);    
             elseif exist ( fullfile (pwd, [simulation.EPW.name{1} '.epw']) ,'file' )
                 simulation.EPW.path = fullfile (pwd);
             elseif exist ( fullfile ( Ep_dir,'WeatherData', [simulation.EPW.name{1} '.epw']) ,'file' )
                 simulation.EPW.path = fullfile ( Ep_dir,'WeatherData');
             else
                 error(['Le fichier météo ''%s'' n''a pas été trouvé. Défenissez la variable ''simulation.EPW.path''.\n'...
-                    'Ou les répertoires suivants :\n  %s\n  %s'],...
+                    'Ou les répertoires suivants :\n  %s\n  %s\n  %s'],...
                     [simulation.EPW.name{1} '.epw'],...
-                    fullfile ( pwd),...
-                    fullfile ( Ep_dir,'WeatherData'));
+                    fullfile(LocalPath),...
+                    fullfile(pwd),...
+                    fullfile(Ep_dir,'WeatherData'));
             end
         end
         % Test des autres fichiers au même emplacement
@@ -1131,8 +1134,7 @@ else
                 % For temporal analysis, we take all of the indicators of
                 % all the ranges and clean the list.
                 [liste,liste_idplage]=listnoms(legende.indicateurs,'','indicateurs');
-                valid = eval(['[' strjoin( cellstrjoin({'test_unused(' '>0);'},liste)') ']'] );
-                
+                valid = ~eval(['[' strjoin( cellstrjoin({'test_unused(' ');'},liste)') ']'] );
                 liste = liste(valid);
                 liste_idplage = liste_idplage(valid);
                 liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste)',',\n'), ']')   );
@@ -1141,14 +1143,13 @@ else
             % selection des sorties désirées
 %selection = persobox( str2mat(liste_noms))
             maxi=0;  for m=liste_noms', maxi = max(maxi,length(m{:}));  end
-                
             while true                
             
                 [selection,ok] = listdlg('Name', 'Sorties à étudier',...
                                         'PromptString','Sélection des sorties :',...
                                         'SelectionMode','multiple',...
                                         'ListString',liste_noms,...
-                                        'ListSize', [6*maxi 15*(length(liste_noms)+1)]);
+                                        'ListSize', [10+6*maxi 15*(length(liste_noms)+1)]);
                 if ok==0
                     error('Arrêt par l''utilisateur.')
                 end
@@ -1218,7 +1219,7 @@ else
     save(fullfile(params.rep_result,local.noms.save))
 
 end
-keyboard
+
 
 %% Selection des sorties parmi les données valides
 if ~(etape>6)
@@ -1236,7 +1237,7 @@ if ~(etape>6)
                                 'PromptString','Sélection des sorties :',...
                                 'SelectionMode','multiple',...       'InitialValue',[1 4 11 14],...  
                                 'ListString',legende.sorties_all(resultat.sorties_valide),...
-                                'ListSize', [6*maxi 15*(sum(resultat.sorties_valide)+1)]);
+                                'ListSize', [10+6*maxi 15*(sum(resultat.sorties_valide)+1)]);
 
         if ok==0
             error('Arrêt par l''utilisateur.')
@@ -1259,7 +1260,7 @@ end
     
 %% Images
 
-if local.images.export
+if local.images.export && resultat.range_temporal==0
     fprintf('Enregistrement des images - entrées / sorties.\n');
     
     % Choix des points
@@ -1364,7 +1365,6 @@ if local.images.export
 
             end
             
-              
             if ~strcmpi({params.variables.infos(params.variables.vars_index(i)).loi},'Discret')
                     set(gca,'XLim',[min(params.plan(:,i)) max(params.plan(:,i))]);
 %                 if isempty(params.variables.infos(params.variables.vars_index(i)).limites)
@@ -1392,7 +1392,7 @@ end
 
 %% Images 2 (entre les sorties)
 
-if local.images.export2
+if local.images.export2 && resultat.range_temporal==0
     fprintf('Enregistrement des images - sorties / sorties.\n');
     
     % Choix des points
@@ -1515,11 +1515,24 @@ else
     etape=7;
     save(fullfile(params.rep_result,local.noms.save))
 
-    
 end
+
+
 %% 7 Graphiques
 fprintf('=== %s ===\n',local.noms.etude);
 
+disp('Means Values')
+disp(analyse.M)
+disp('Variance Values')
+disp(analyse.V)
+if isfield(analyse,'SI_rbdfast')
+    disp('Sensitivity Index Values (RBD-FAST Method)')
+    disp(analyse.SI_rbdfast)
+end
+if isfield(analyse,'SI_sobol')
+    disp('Sensitivity Index Values (Sobol Method)')
+    disp(analyse.SI_sobol)
+end
 
 if ~(resultat.range_temporal==0)
     % Création du répertoire de destination
@@ -1533,47 +1546,57 @@ if ~(resultat.range_temporal==0)
     % Selection of the range
     k=resultat.range_temporal;
     
+    if isfield(analyse,'SI_rbdfast')
+        SI= analyse.SI_rbdfast;
+    elseif isfield(analyse,'SI_sobol')
+        SI= analyse.SI_sobol;
+    elseif isfield(analyse,'PC_Infos')
+        error('To be defined')
+    end
     
     % ====== Sensitity analysis results ======
     
     % Select time step
-    if      size(analyse.SI_rbdfast,2) == 24
+    if      size(SI,2) == 24
         donne_dates = dates.h(1:24);
-    if      size(analyse.SI_rbdfast,2) == sum(resultat.plage(k).index_h)
+    elseif      size(SI,2) == sum(resultat.plage(k).index_h)
         donne_dates=dates.h(resultat.plage(k).index_h);
-    elseif  size(analyse.SI_rbdfast,2) == sum(resultat.plage(k).index)
+    elseif  size(SI,2) == sum(resultat.plage(k).index)
         donne_dates=dates.j(resultat.plage(k).index);
-    elseif  size(analyse.SI_rbdfast,2) == length(dates.h)
+    elseif  size(SI,2) == length(dates.h)
         donne_dates=dates.h;
-    elseif  size(analyse.SI_rbdfast,2) == length(dates.j)
+    elseif  size(SI,2) == length(dates.j)
         donne_dates=dates.j;
     end
     
-    tep= analyse.SI_rbdfast;
-    tep(:,isnan(tep(1,:)))=0;  
-    tep(tep(:)<0)=0;
+    SI(:,isnan(SI(1,:)))=0;
+    SI(SI(:)<0)=0;                  % can I ?
 
     % Select only the relevant outputs
-    filtre = find(max(analyse.SI_rbdfast,[],2)>0.1);
+    if size(SI,1)>5
+        filtre = find(max(SI,[],2)>0.1);
+    else
+        filtre = 1:size(SI,1);
+    end
 
     % Sort according the mean effect
-    [~,I] = sort(mean(analyse.SI_rbdfast(filtre,:),2),'descend');
+    [~,I] = sort(mean(SI(filtre,:),2),'descend');
     filtre = filtre(I);
 
     h=figure;
     if false    %Plot lines
         hold on
-        plot(donne_dates, sum(analyse.SI_rbdfast(filtre,:),1), 'LineWidth', 2)
-        plot(donne_dates,tep')
+        plot(donne_dates, sum(SI(filtre,:),1), 'LineWidth', 2)
+        plot(donne_dates,SI(filtre,:)')
         hold off
         legend({'Total',analyse.legende_entrees{filtre,1}})
     else        %Plot stacked area
-        area(donne_dates,tep')
+        area(donne_dates,SI(filtre,:)')
         legend(analyse.legende_entrees{filtre,1})
     end
     
-    if max(sum(analyse.SI_rbdfast(filtre,:),1))>1.15
-        set(gca,'Ylim',[0, max(sum(analyse.SI_rbdfast(filtre,:),1))])
+    if max(sum(SI(filtre,:),1))>1.15
+        set(gca,'Ylim',[0, max(sum(SI(filtre,:),1))])
     else
         set(gca,'Ylim',[0, 1.15])
     end
@@ -1600,10 +1623,10 @@ if ~(resultat.range_temporal==0)
 %    REFSIMUL = [];
 
     A=quantile(resultat.sorties,[.025 .25 .50 .75 .975]);
-    
-    disp('interquartile moyen')
+    disp('Temporal uncertainty analysis results')
+    disp('Interquartile moyen')
     disp(nanmean(A(4,:)-A(2,:))  )
-    disp('taux interquartile moyen')
+    disp('Taux interquartile moyen')
     disp(nanmean((A(4,:)-A(2,:))./(A(4,:)+A(2,:))) )
     
     
@@ -1675,14 +1698,17 @@ if false
 
 end
 
-end
+disp('For more information, type ''global analyse'' and look at the content of the variable ''analyse''.')
+fprintf('To reload the analysis: EPLab(''%s'')\n\n',fullfile(params.rep_result, 'config.m') ); % FileConfig')
 
 
 end
+
 
 function x = test_unused(x)
 % test for unused temporal indicator
-    x = length(x)==1 && x(1)==0; % || any(x>0)
+    x = isempty(x) || ( length(x)==1 && x(1)==0 ); % || any(x>0)
 end
+
 
 

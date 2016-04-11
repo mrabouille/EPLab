@@ -36,3 +36,6 @@ for k=temps'
         end
     end
 end
+if isempty(loc)
+    loc(1:length(liste),1)=1;
+end

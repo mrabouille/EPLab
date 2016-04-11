@@ -56,13 +56,19 @@ if ~range_temporal==0
 
             end
 
-            %% these have to be checked  ==>  Tsurf_out{??end??}
-            indicateurs(k).range_MeanHourly_Tout = mean( reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h),24,[] ) ,2);
-            legende.indicateurs(k).range_MeanHourly_Tout = {['Hourly Mean Surface Temperature outside face [C]']};
-            indicateurs(k).range_MeanHourly_Tin = mean( reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h),24,[] ) ,2);
-            legende.indicateurs(k).range_MeanHourly_Tin  = {['Hourly Mean Surface Temperature inside face [C]']};
-
-
+            %% these have to be checked  ==>  Tsurf_out{??end??}    (Nord /Sud /Est /Ouest /Plancher /Toiture)
+            if isfield(resultats.humdite,'Tsurf_out')
+                indicateurs(k).range_MeanHourly_Tout = mean( reshape( resultats.humdite.Tsurf_out{end}(plages(k).index_h),24,[] ) ,2);
+                legende.indicateurs(k).range_MeanHourly_Tout = {['Hourly Mean Surface Temperature outside face (toiture) [C]']};
+            end
+            if isfield(resultats.humdite,'Tsurf_int')
+                indicateurs(k).range_MeanHourly_Tin = mean( reshape( resultats.humdite.Tsurf_int{end}(plages(k).index_h),24,[] ) ,2);
+                legende.indicateurs(k).range_MeanHourly_Tin  = {['Hourly Mean Surface Temperature inside face (toiture) [C]']};
+            end
+            
+        end
+        if isfield(resultats,'surface')
+            
             %% Moyennes horaires
             if isfield(resultats.surface,'cond_h')
             indicateurs(k).range_MeanHourly_FluxInt = mean( reshape( resultats.surface.cond_h.intcard(plages(k).index_h,end) ,24,[] ) ,2);
@@ -75,7 +81,6 @@ if ~range_temporal==0
             indicateurs(k).range_MeanHourly_Storage = mean( reshape( resultats.surface.storage_h.avgcard.pos(plages(k).index_h,6) + resultats.surface.storage_h.avgcard.neg(plages(k).index_h,6) ,24,[] ) ,2);
             legende.indicateurs(k).range_MeanHourly_Storage = {['Hourly Mean Surface Storage [kWh/m^2]']};
             end
-
         end
 
 
@@ -90,11 +95,11 @@ if ~range_temporal==0
 
             % Mean Hourly values of the range
             indicateurs(k).hourly_E_heatTotal = my24range(resultats.energie.heat.Total,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_heatTotal = {['Total Heating Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_heatTotal = {['Hourly Total Heating Energy ' plages(k).nom ' [kWh]']};
             indicateurs(k).hourly_E_heatSensible = my24range(resultats.energie.heat.Sensible,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_heatSensible = {['Sensible Heating Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_heatSensible = {['Hourly Sensible Heating Energy ' plages(k).nom ' [kWh]']};
             indicateurs(k).hourly_E_heatLatent = my24range(resultats.energie.heat.Latent,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_heatLatent = {['Latent Heating Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_heatLatent = {['Hourly Latent Heating Energy ' plages(k).nom ' [kWh]']};
         end
 
         if isfield(resultats,'energie') && isfield(resultats.energie,'cool')
@@ -108,11 +113,11 @@ if ~range_temporal==0
 
             % Mean Hourly values of the range
             indicateurs(k).hourly_E_coolTotal = my24range(resultats.energie.cool.Total,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_coolTotal = {['Total Cooling Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_coolTotal = {['Hourly Total Cooling Energy ' plages(k).nom ' [kWh]']};
             indicateurs(k).hourly_E_coolSensible = my24range(resultats.energie.cool.Sensible,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_coolSensible = {['Sensible Cooling Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_coolSensible = {['Hourly Sensible Cooling Energy ' plages(k).nom ' [kWh]']};
             indicateurs(k).hourly_E_coolLatent = my24range(resultats.energie.cool.Latent,plages(k).index_h);
-            legende.indicateurs(k).hourly_E_coolLatent = {['Latent Cooling Energy ' plages(k).nom ' [kWh]']};
+            legende.indicateurs(k).hourly_E_coolLatent = {['Hourly Latent Cooling Energy ' plages(k).nom ' [kWh]']};
         end
 
 

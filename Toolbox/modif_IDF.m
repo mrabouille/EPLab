@@ -184,6 +184,9 @@ else
                     % Identification du type de donnée et mise en forme
                     index = min(find(rech)); %id de la variable                    
                     if strcmpi(variables(index).loi, 'Discret')
+                        if valeurs(index)>length(variables(index).limites)
+                            error('Value ''%d'' out of range for the input ''%s''.\n',valeurs(index),variables(index).nom)
+                        end
                         chaine = variables(index).limites{valeurs(index)};
                         if isnumeric(chaine)
                             chaine = num2str(chaine, '%f');
