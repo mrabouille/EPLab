@@ -100,6 +100,7 @@ sorties = {
 	-1,'%ZONE%:Zone Operative Temperature [C](Hourly)','donnees.zone.Toperative(:,%ZONEID%)';
 	-1,'%ZONE%:Zone Air Temperature [C](Hourly)','donnees.zone.Tas(:,%ZONEID%)';
 	-1,'%ZONE%:Zone Air Relative Humidity [%](Hourly)','donnees.zone.RH(:,%ZONEID%)';
+    -1,'%ZONE%:Zone Air Humidity Ratio [](Hourly)','donnees.zone.w(:,%ZONEID%)';
 
 	% Consomations Electriques
 	0,'Whole Building:Facility Total Purchased Electric Energy [J](Hourly)','donnees.E_elec_tot';
@@ -113,6 +114,12 @@ sorties = {
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Sensible Cooling Rate [W](Hourly)','donnees.zone.E_cool.Sensible(:,%ZONEID%)';
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Latent Cooling Rate [W](Hourly)','donnees.zone.E_cool.Latent(:,%ZONEID%)';
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Total Cooling Rate [W](Hourly)','donnees.zone.E_cool.Total(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Sensible Heating Rate [W](Hourly)','donnees.zone.E_heat.Sensible(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Latent Heating Rate [W](Hourly)','donnees.zone.E_heat.Latent(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Total Heating Rate [W](Hourly)','donnees.zone.E_heat.Total(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Sensible Cooling Rate [W](Hourly)','donnees.zone.E_cool.Sensible(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Latent Cooling Rate [W](Hourly)','donnees.zone.E_cool.Latent(:,%ZONEID%)';
+    -1,'%ZONE% PTAC:Zone Packaged Terminal Air Conditioner Total Cooling Rate [W](Hourly)','donnees.zone.E_cool.Total(:,%ZONEID%)';
 
 	% Transfert des fenêtres ext (Flux total (cond + ray) trasmit dans la zone par fenetre) 
 	-1,'%WINDOW%:Surface Window Heat Gain Energy [J](Daily)','donnees.surface.E_win_gain(:,%SURFID%)';
@@ -126,41 +133,40 @@ sorties = {
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
 params.nb_tir=200;
 
-params.type_ech=4;      % 1:random_global 3:RBD_global 4:LHS-local 5:LHS_global 6:Halton_local 7:Halton_global 8:LPTau_local  9:LPTau_global
+params.type_ech=4;      % 4:LHS-local 6:Halton_local 8:LPTau_local      //  1:random_global 3:RBD_global 5:LHS_global 7:Halton_global 9:LPTau_global  !!! global = [min max] of the 'limites' field & all uniform(used to find a solution)
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 
-local.recap_plan = true;    % compare les variations initiales au variations du plan 
+local.recap_plan = true;    % compare les variations initiales aux variations du plan 
 
 
 %% Simulation DEFINITION
 params.model = 'EnergyPlus';
 % Repertoire(s) d'instalation EnergyPlus (!! finir avec un '\' !!)
-Ep_dir = {'C:\EnergyPlusV8-3-0\',
-          'C:\EnergyPlusV8-4-0\',
+Ep_dir = {'C:\EnergyPlusV8-3-0\'
+          'C:\EnergyPlusV8-4-0\'
           'C:\EnergyPlusV8-5-0\'
 };
 
 local.nb_proc=7;
 local.auto_start=true; 	% Demarre automatiquement les simulations
-local.test_delay=10;	% Intervale en sec. entre les tests sur les résultats de simulation
+local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de simulation
 
 
 
 %% OUTPUT SHAPINGS
-resultat.extract_lum=false;
-resultat.range_temporal = 0;	%To run a temporal analysis define ID of the range, otherwise 0 
 
 % Study ranges
-resultat.plage(1).nom = 'HotMonth';
-resultat.plage(1).debut = '01/07';
-resultat.plage(1).fin = '31/07';
-resultat.plage(1).temporel = false;
+resultat.plage(1).nom = 'ColdMonth';
+resultat.plage(1).debut = '01/01';
+resultat.plage(1).fin = '31/01';
 
-resultat.plage(2).nom = 'ColdMonth';
-resultat.plage(2).debut = '01/01';
-resultat.plage(2).fin = '31/01';
-resultat.plage(2).temporel = false;
+% resultat.plage(2).nom = 'HotMonth';
+% resultat.plage(2).debut = '01/07';
+% resultat.plage(2).fin = '31/07';
 
+resultat.range_temporal = 0;	%To run a temporal analysis define ID of the range, // '-1' = all ranges
+
+resultat.extract_lum=false;
 
 %% RESUTS EXPORT
 % Saving of all indicateur results
@@ -168,12 +174,13 @@ resultat.save = false;      % save the values calculated
 resultat.save_path = '';    % path or mat-file to save the values (several studies can be added in the same file)
 
 
-% Création des images
+% Création des images  (Not for temporal analysis)
 local.images.export=false;      % active l'export entrées / sorties
 local.images.export2=false;     % active l'export sorties / sorties
+
 local.images.colors=false;
 local.images.visible = 'off';   % affiche les courbes (ralenti)
-local.images.nbs_point = 0;   % limite le nombre de points des graphs, off=0
+local.images.nbs_point = 0;     % limite le nombre de points des graphs, off=0
 local.images.random = false;    % randomise les points choisis
 local.images.fontsize = 16;
 local.images.markersize = 15;
@@ -181,7 +188,7 @@ local.images.markersize = 15;
 
 %% SENSITIVITY ANALYSIS DEFINITION
 % type d'Analyse
-analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD  /  5 sobol
+analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD / 5 sobol
 
 % Specific properties: RBDFAST
 % analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
@@ -189,9 +196,9 @@ analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD  /  5 sobol
 
 % Convergence graph
 analyse.convergence = false;     % only for RBDFAST & Not for temporal analysis
-analyse.convergence_step = 10;  % increase of simulation number
-analyse.convergence_input = 0;  % check in params.variables.actif // '0' = all inputs
-analyse.convergence_output = 0; % check in resultat.sorties_valide & legende.sorties_all; // '0' = variance max output's
+analyse.convergence_param.step = 10;  % increase of simulation number
+analyse.convergence_param.input = 0;  % check in params.variables.actif // '0' = all inputs
+analyse.convergence_param.output = 0; % check in resultat.sorties_valide & legende.sorties_all; // '0' = variance max output's
 
 % Bootstrap analysis
 analyse.bootstrap = false;
