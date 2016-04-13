@@ -1,6 +1,6 @@
 function joinedStr = strjoin(c, aDelim)
-%SAME AS R2014 JUST FOR BACKWARD COMPATIBILITY OF MATLAB OLDER THAN R2013a !!!!
 %STRJOIN  Join cell array of strings into single string
+%SAME AS R2014 JUST FOR BACKWARD COMPATIBILITY OF MATLAB OLDER THAN R2013a !!!!
 %   S = STRJOIN(C) constructs the string S by linking each string within
 %   cell array of strings C together with a space.
 %
@@ -46,7 +46,9 @@ function joinedStr = strjoin(c, aDelim)
 
 %   Copyright 2012 The MathWorks, Inc.
 
-narginchk(1, 2);
+if nargin<1 || nargin>2
+    error('Wrong number of input arguments, must be 1 or 2.')
+end  
 
 % Check input arguments.
 if ~isCellString(c)

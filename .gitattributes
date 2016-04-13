@@ -19,7 +19,7 @@
 # Matlab Files
 *.m text
 
-*.mat binary
+*.epw binary
 *.fig binary
-
+*.mat binary
 *.sql binary

@@ -127,7 +127,7 @@ switch analyse.type_etude
         
         
     case 3  %Random Balance Designs
-        fprintf('-> Random Balance Designs.\n')
+        fprintf('-> Random Balance Designs - FAST.\n')
         if ~isfield(analyse,'RBD') || ~isfield(analyse.RBD,'harmonics')
             analyse.RBD.harmonics=10;
         end
@@ -143,29 +143,34 @@ switch analyse.type_etude
         end
         analyse.M=mean(resultat.sorties(:,resultat.sorties_valide),1);
         analyse.V=var(resultat.sorties(:,resultat.sorties_valide),0,1);
-        analyse.SI_rbdfast
+        analyse.SI_rbdfast;
        
         % affichage de la convergence
         if isfield(analyse,'convergence') &&  analyse.convergence
-            if analyse.convergence_input==0
-                analyse.convergence_input = params.variables.vars_index;
+            fprintf('-> Convergence analysis.\n')
+            if analyse.convergence_param.input==0
+                analyse.convergence_param.input = params.variables.vars_index;
             end
-            if analyse.convergence_output==0
+            if analyse.convergence_param.output==0
                 [~,IdMaxVar] = max(analyse.V);
-                analyse.convergence_output = find(cumsum(resultat.sorties_valide)==IdMaxVar, 1, 'first');
+                analyse.convergence_param.output = find(cumsum(resultat.sorties_valide)==IdMaxVar, 1, 'first');
             end
             
             % clear X Vsimple Msimple SI_rbdfast
             start = analyse.RBD.harmonics*2+1;
-            steps = start:analyse.convergence_step:params.nb_tir; if rem(params.nb_tir-start,analyse.convergence_step)~=0, steps = [steps params.nb_tir]; end
+            steps = start:analyse.convergence_param.step:params.nb_tir; if rem(params.nb_tir-start,analyse.convergence_param.step)~=0, steps = [steps params.nb_tir]; end
             for k=1:length(steps)
-                Vsimple(k,:)=var(resultat.sorties(1:steps(k),analyse.convergence_output),0,1);
-                Msimple(k)=mean(resultat.sorties(1:steps(k),analyse.convergence_output),1);
-                SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD.harmonics,[],resultat.sorties(1:steps(k),analyse.convergence_output),params.plan(1:steps(k),analyse.convergence_input));
+                Vsimple(k,:)=var(resultat.sorties(1:steps(k),analyse.convergence_param.output),0,1);
+                Msimple(k)=mean(resultat.sorties(1:steps(k),analyse.convergence_param.output),1);
+                SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD.harmonics,[],resultat.sorties(1:steps(k),analyse.convergence_param.output),params.plan(1:steps(k),analyse.convergence_param.input));
             end
             figure
             plot(steps,Vsimple/Vsimple(end),steps,Msimple/Msimple(end),steps,SI_rbdfast)
-            title( analyse.legende_sorties(analyse.convergence_output) )
+            if resultat.range_temporal==0
+                title( analyse.legende_sorties(analyse.convergence_param.output) )
+            else
+                title( analyse.legende_sorties )
+            end
             legend(horzcat( {'Var / Final Var','Mean / Final Mean'},strcat( repmat({'SI of '},params.variables.vars_nb,1), analyse.legende_entrees(:,1))') , 'Location','SouthWest')
             xlabel('Number of simulation')
 
@@ -173,6 +178,7 @@ switch analyse.type_etude
         
         % Indicateur Bootstrapé
         if isfield(analyse,'bootstrap') &&  analyse.bootstrap
+            fprintf('-> Bootstrap analysis.\n')
             for rep=1:analyse.bootstrap_param.rep
                 % Selection aléatoire de données avec retirage
                 Ind = randi(size(resultat.sorties,1),analyse.bootstrap_param.ech,1);
@@ -228,6 +234,7 @@ switch analyse.type_etude
 
             % Indicateur Bootstrapé
             if analyse.bootstrap
+                fprintf('-> Bootstrap analysis.\n')
                 for rep=1:analyse.bootstrap_param.rep
                     % Selection aléatoire de données avec retirage
                     Ind = randi(size(Y1,1),analyse.bootstrap_param.ech,1);
@@ -261,9 +268,9 @@ switch analyse.type_etude
             
             
         end
-        analyse.SI_sobol
         
-
+        if isfield(analyse,'convergence') &&  analyse.convergence
+            warning('-> Convergence analysis bust be defined.\n')
 % affichage de la convergence 
 %         for i=1:params.variables.vars_nb
 %             [~,tri]=sort(params.index_rbd_sobol(:,i));
@@ -299,8 +306,12 @@ switch analyse.type_etude
                  end
                 end
 %}
+        end
 end
 
+
+% Code for Temporal analysis of RBD FAST
+% See also end of EPLab\EPLab.m
 if false
     warning('Tambouille perso !!!!!!!!')
     X = params.plan((simulation.etats>=2),1:params.variables.vars_nb);

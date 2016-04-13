@@ -66,9 +66,9 @@ A FAIRE:
 %% Chargement
 
 format short; %format d'affichage des sorties MatLab(long: 16 chiffres)
-fclose('all');
-clc
+
 % clear all
+fclose('all');
 delete(timerfind)   % clear all timer fonctions
 
 % Vars=whos;
@@ -87,20 +87,22 @@ global legende
 
 local=[]; params=[]; simulation=[]; resultat=[]; geometrie=[]; analyse=[]; affichage=[]; legende=[];
 
+% Import des Toolbox
+addpath(genpath(fullfile(pwd,'Toolbox')),'-begin')
 
 % Chargement d'un fichier de configuration
 if ~exist('FileConfig','var')
-    [FileConfig,PathName] = uigetfile('*config*.m'); %,'Select file to open',PathName
+    [FileConfig,LocalPath] = uigetfile('*config*.m'); %,'Select file to open',LocalPath
     if isequal(FileConfig,0)
         error('Arrêt par l''utilisateur.')
     end
 else
-    [PathName,FileConfig,ext] = fileparts(FileConfig);
+    [LocalPath,FileConfig,ext] = fileparts(FileConfig);
     FileConfig = [FileConfig,ext];
-    if isempty(PathName), PathName=pwd; end
+    if isempty(LocalPath), LocalPath=pwd; end
     clear ext
 end
-if ~exist(fullfile(PathName,FileConfig),'file')
+if ~exist(fullfile(LocalPath,FileConfig),'file')
     error('Fichier de configuration non trouvé.')
 end
 
@@ -108,32 +110,32 @@ end
 if ~all(strcmp(strsplit(FileConfig,'.'),genvarname(strsplit(FileConfig,'.'))))
     error('Invalide file Name: %s',FileConfig)
 end
-FileConfig = fullfile(PathName,FileConfig);
+FileConfig = fullfile(LocalPath,FileConfig);
 run(FileConfig)
- 
+
+if ~strcmp(EPLab_version, '1.8.1')
+    error('Wrong version of the config file.\nEPLab:\t1.8.1\nconfig:\t%s\n',EPLab_version)
+end
 
 %% Initialisation
 
-% Import des Toolbox
-addpath(genpath(fullfile(pwd,local.noms.toolsPath)),'-begin')
-
 % Recherche du fichier de sauvegarde
-if exist(fullfile(PathName,local.noms.save) ,'file')
+if exist(fullfile(LocalPath,local.noms.save) ,'file')
 %=== Le fichier config est dans le repertoire de résultat ===
-    loc = strfind( PathName, [local.noms.result local.noms.etude]);
+    params.rep_result=LocalPath;
+    loc = strfind( LocalPath, [local.noms.result local.noms.etude]);
     if isempty(loc)
         error('Le nom du repertoire ne corespond pas au nom de l''étude')
     end
     load_file=true;
-    params.rep_result=PathName;
-    PathName = PathName(1:loc-1);
+    LocalPath = LocalPath(1:loc-1);
     clear loc
 else
 %=== Le fichier config n'est pas dans un repertoire de résultat ===
 
     % Répertoires des résultats et des simulations
-    params.rep_result=fullfile(PathName,[local.noms.result local.noms.etude]);
-    params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+    params.rep_result=fullfile(LocalPath,[local.noms.result local.noms.etude]);
+    params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
 
     % Vérification des sous-répertoires -> RAZ / Sauvegarde / Chargement
     exist_result = size(dir(params.rep_result),1)>2;
@@ -180,7 +182,9 @@ else
     clear exist_simul exist_result
 end
 
-fprintf('=== %s ===\n',local.noms.etude);
+fprintf('\n\n\n======%s======\n',repmat('=',1,length(local.noms.etude)) );
+fprintf('===== %s =====\n',local.noms.etude);
+fprintf('======%s======\n\n',repmat('=',1,length(local.noms.etude)) );
 fprintf('appel direct: EPLab(''%s'') \n',fullfile(params.rep_result, 'config.m') ); % FileConfig
 
 % Chargement d'une simulation précédente
@@ -199,12 +203,12 @@ if exist('load_file','var') && load_file
                     '4/ Extraction',...
                     '5/ Mise en forme',...
                     '6/ Analyse',...
-                    '7/ Interface'};
+                    '7/ Fin'};
     [etape,ok] = listdlg('ListString',liste_etapes(1:etape),...
                     'SelectionMode','single',...
                     'ListSize',[160 100],...
                     'InitialValue',etape,...
-                    'PromptString','Selectionnez l''étape de départ:');
+                    'PromptString','Selectionnez l''étape de départ:'); %#ok<NODEF>
     if ~ok, error('Arrêt par l''utilisateur.'), end    
     clear load_file liste_etapes ok
 
@@ -213,14 +217,14 @@ if exist('load_file','var') && load_file
     if etape == 1
         % Reprise du début: pas de chargement de données sauvegardées
         INIT=true;
-        params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+        params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
     end
     if etape >= 2
         % Chargement des données générales
         load(fullfile(params.rep_result,local.noms.save), 'params')
         % Mise à jour des répertoires 'résultats' et 'simulations'
-        params.rep_result=fullfile(PathName,[local.noms.result local.noms.etude]);
-        params.rep_simul=fullfile(PathName,[local.noms.simul local.noms.etude]);
+        params.rep_result=fullfile(LocalPath,[local.noms.result local.noms.etude]);
+        params.rep_simul=fullfile(LocalPath,[local.noms.simul local.noms.etude]);
         
         % ?
         if etape<3 && strcmp(params.EPW_type,'liste')
@@ -338,6 +342,7 @@ else
                         error(sprintf('Les variations sont trop proches des limites d''étude.\nVérifier la variable : ''%s''',params.variables.infos(k).nom))
                     end
             end
+            clear centre ecart
         end
     end
 end
@@ -352,7 +357,7 @@ if etape<4
         case {'E+','EP','ENERGYPLUS'}
             % Test Version E+
             IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
-                        fullfile(PathName, sprintf('%s.idf',simulation.IDF_initial)),
+                        fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
                         fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))};
 
             [Ep_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
@@ -371,7 +376,7 @@ if etape<4
 %{        
    > where is the idf you are looking for ? (list of possible path)
            IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
-                       fullfile(PathName, sprintf('%s.idf',simulation.IDF_initial)),
+                       fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
                        fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))}; 
    > where is the domus.exe // Le domus.exe on vérifie le fichier config.m
             Domus_dir = 
@@ -392,7 +397,7 @@ Domus_dir = Domus_dir{1}
            end
           else
             if ~exist('IDF_dir','var') 
-               [IDF_dir,PathName] = uigetfile('*config*.m');
+               [IDF_dir,LocalPath] = uigetfile('*config*.m');
              if isequal(IDF_dir,0)
                 error('Fichier de configuration non trouvé.')
         end
@@ -417,16 +422,19 @@ Domus_dir = Domus_dir{1}
                     'Répertoire :\t%s\nFichier :\t%s\n'],...
                     fullfile ( simulation.EPW.path),...
                     [simulation.EPW.name{1} '.epw']);
+            elseif exist ( fullfile (LocalPath, [simulation.EPW.name{1} '.epw']) ,'file' )
+                simulation.EPW.path = fullfile (LocalPath);    
             elseif exist ( fullfile (pwd, [simulation.EPW.name{1} '.epw']) ,'file' )
                 simulation.EPW.path = fullfile (pwd);
             elseif exist ( fullfile ( Ep_dir,'WeatherData', [simulation.EPW.name{1} '.epw']) ,'file' )
                 simulation.EPW.path = fullfile ( Ep_dir,'WeatherData');
             else
                 error(['Le fichier météo ''%s'' n''a pas été trouvé. Défenissez la variable ''simulation.EPW.path''.\n'...
-                    'Ou les répertoires suivants :\n  %s\n  %s'],...
+                    'Ou les répertoires suivants :\n  %s\n  %s\n  %s'],...
                     [simulation.EPW.name{1} '.epw'],...
-                    fullfile ( pwd),...
-                    fullfile ( Ep_dir,'WeatherData'));
+                    fullfile(LocalPath),...
+                    fullfile(pwd),...
+                    fullfile(Ep_dir,'WeatherData'));
             end
         end
         % Test des autres fichiers au même emplacement
@@ -745,12 +753,12 @@ else
         fprintf('Simulation.\n-> %d fichier(s) en %d lot(s).\n',nb_simul, min(nb_simul,local.nb_proc));
         switch upper(params.model)
             case {'E+','EP','ENERGYPLUS'}
-                EplusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.start_simul);
+                EplusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.auto_start);
             case {'DOMUS'}
                 % Les modifications appostées par Lais Lagos 
                 
             % > you have to add the 'Domus_dir' in the function
-%                DomusMulti(params.rep_simul, local.IDF_dir ,local.nb_proc,local.start_simul);
+%                DomusMulti(params.rep_simul, local.IDF_dir ,local.nb_proc,local.auto_start);
                 error('Tem que definir o modelo !')
         
             otherwise
@@ -759,7 +767,7 @@ else
         etape=4;
         save(fullfile(params.rep_result,local.noms.save))
 
-        if isfield(local, 'start_simul') && local.start_simul==false
+        if isfield(local, 'auto_start') && local.auto_start==false
             dos(sprintf('Explorer /e,/select,%s &',fullfile(params.rep_simul,'SimMulti.bat')));
             error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.');
         end
@@ -905,10 +913,10 @@ else
             disp(file)
             rethrow(exception)
         end
-                donnees=pre_traitement(params,dates,geometrie,donnees_brut,resultat.extract_lum);
+                resSimul=pre_traitement(params,dates,geometrie,donnees_brut,resultat.extract_lum);
 
                 % Enregistrement des données
-                save(fullfile(params.rep_result,[IDF_courant '.mat']),'donnees')
+                save(fullfile(params.rep_result,[IDF_courant '.mat']),'resSimul')
 
                 simulation.etats(id)=2;
                 save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
@@ -1055,13 +1063,24 @@ else
 
         resultat.plage(k).index_h=reshape(repmat(resultat.plage(k).index',24,1),[],1);
     end
-    clear id_debut id_fin date rep
+    clear id_debut id_fin date rep date_format
     
-    
+    % Check range_temporal validity
+    if ~isfield(resultat,'range_temporal')
+        resultat.range_temporal = 0;
+    elseif resultat.range_temporal > length(resultat.plage)
+        error('The ID (%d) is out of range. Check the value of resultat.range_temporal',resultat.range_temporal)
+    end
     
     % SAVING: Initialisation
     if isfield(resultat,'save') && resultat.save
         
+        if resultat.range_temporal==0
+            res_type = 'Datas';
+        else
+            res_type = 'Datas_temporal';
+        end
+
         if isempty(resultat.save_path)
             resultat.save_path = params.rep_result;
         end
@@ -1071,25 +1090,29 @@ else
         elseif ~strcmp(ext,'.mat')
             error('Wrong extension, check ''resultat.save_path'':\n%s',resultat.save_path)
         end
+        clear ext
         
         studyVarName = genvarname(regexprep(local.noms.etude,'[^A-Za-z_0-9\s]','_'));
         studyPlageName = genvarname(regexprep({resultat.plage.nom},'[^A-Za-z_0-9\s]','_'));
         
         if exist(resultat.save_path,'file')
             load(resultat.save_path,'Result_indicateur')
-            if isfield(Result_indicateur,studyVarName)                
+            if isfield(Result_indicateur,studyVarName) && isfield(Result_indicateur.(studyVarName),res_type)
                 if ~strcmp('Yes',questdlg(sprintf('This Study have been saved before.\nDo you want erase the previous values?'),local.noms.etude,'Yes','No','No'))
                     error('Arrêt par l''utilisateur.')
                 end
+            else
                 Result_indicateur.(studyVarName) = [];
             end
         end
-        Result_indicateur.(studyVarName).Datas = struct('Plage',{resultat.plage.nom})
+        Result_indicateur.(studyVarName).(res_type) = struct('Plage',{resultat.plage.nom});
+        
     end
     
-    
     fprintf('Mise en forme des résultats\n');
-    resultat.sorties=[];
+    
+    % Clear previous extacted information
+    resultat.sorties=[];    
     liste_choix=[];
     if isfield(legende,'sorties')
         legende = rmfield(legende,'sorties');
@@ -1099,37 +1122,59 @@ else
         
         IDF_courant = params.liste_fichier{id};
         load(fullfile(params.rep_result,[IDF_courant '.mat']))
-
-        indicateurs=etude_indicateurs(donnees,resultat.plage);
+        
+        indicateurs=etude_indicateurs(resSimul,resultat.plage, resultat.range_temporal);
      
         if isempty(liste_choix)
             % listing des noms présents dans la legende
-            liste=listnoms(legende.indicateurs(1),'','indicateurs(1).');
-            liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste)',',\n'), ']')   );
-
+            if resultat.range_temporal==0
+                % listing reduit par type d'indicateur
+                liste=listnoms(legende.indicateurs(1),'','indicateurs(1)');
+                liste_noms = listnoms(legende.indicateurs(1),'','indicateurs');
+            else
+                % For temporal analysis, we take all of the indicators of
+                % all the ranges and clean the list.
+                [liste,liste_idplage]=listnoms(legende.indicateurs,'','indicateurs');
+                valid = ~eval(['[' strjoin( cellstrjoin({'test_unused(' ');'},liste)') ']'] );
+                liste = liste(valid);
+                liste_idplage = liste_idplage(valid);
+                liste_noms=eval( strcat( '[', strjoin(strcat( 'legende.', liste)',',\n'), ']')   );
+            end
+            
             % selection des sorties désirées
-    %selection = persobox( str2mat(liste_noms))
-            maxi=0;  for m=liste', maxi = max(maxi,length(m{:}));  end
-            [selection,ok] = listdlg('Name', 'Sorties à étudier',...
-                                    'PromptString','Sélection des sorties :',...
-                                    'SelectionMode','multiple',...
-                                    'ListString',liste,...
-                                    'ListSize', [6*maxi 15*(length(liste)+1)]);
-
-            if ok==0
-                error('Arrêt par l''utilisateur.')
+%selection = persobox( str2mat(liste_noms))
+            maxi=0;  for m=liste_noms', maxi = max(maxi,length(m{:}));  end
+            while true                
+            
+                [selection,ok] = listdlg('Name', 'Sorties à étudier',...
+                                        'PromptString','Sélection des sorties :',...
+                                        'SelectionMode','multiple',...
+                                        'ListString',liste_noms,...
+                                        'ListSize', [10+6*maxi 15*(length(liste_noms)+1)]);
+                if ok==0
+                    error('Arrêt par l''utilisateur.')
+                end
+                
+                if resultat.range_temporal==0
+                    % listing integrant toutes les plages d'étude
+                    liste_choix=cell(0,1);
+                    for k=1:length(legende.indicateurs)
+                        liste_choix = vertcat(liste_choix, strrep(liste(selection), '(1)', sprintf('(%d)',k)) );
+                    end
+                    break
+                    
+                elseif length(selection)==1
+                % For temporal analysis, we allow only one output.
+                    selected_range = liste_idplage(selection);
+                    liste_choix = liste(selection);
+                    break
+                end
             end
-    
-            % listing réduit integrant toutes les plages d'étude
-            liste_choix=cell(0,1);
-            for k=1:length(legende.indicateurs)
-                liste_choix = vertcat(liste_choix, strrep(liste(selection), '(1)', sprintf('(%d)',k)) );
-            end
-
-            % Selection des legendes de sortie
+            
+            % Liste de toutes des legendes de sortie les sorties
             legende.sorties_all=eval( strcat( '[', strjoin(strcat( 'legende.', liste_choix)',',\n'), ']')   );
             
-            clear maxi m liste liste_noms
+            clear maxi m liste liste_noms valid ok selection
         end
         
         % Selection des sorties
@@ -1137,12 +1182,18 @@ else
         
         % SAVING: add simulation values
         if isfield(resultat,'save') && resultat.save
-            for k=1:length(studyPlageName)
+            if resultat.range_temporal>0
+                % only one range is studied
+                plageSet=resultat.range_temporal;
+            else
+                plageSet=1:length(resultat.plage);
+            end
+            for k=plageSet
                 for idv=fieldnames(indicateurs(k))'
-                    if isfield(Result_indicateur.(studyVarName).Datas,idv)
-                        Result_indicateur.(studyVarName).Datas(k).(idv{:}) = cat(1,Result_indicateur.(studyVarName).Datas(k).(idv{:}), getfield(indicateurs(k), idv{:})' );
+                    if isfield(Result_indicateur.(studyVarName).(res_type),idv)
+                        Result_indicateur.(studyVarName).(res_type)(k).(idv{:}) = cat(1,Result_indicateur.(studyVarName).(res_type)(k).(idv{:}), getfield(indicateurs(k), idv{:})' );
                     else
-                        Result_indicateur.(studyVarName).Datas(k).(idv{:}) = getfield(indicateurs(k), idv{:})'
+                        Result_indicateur.(studyVarName).(res_type)(k).(idv{:}) = getfield(indicateurs(k), idv{:})';
                     end
                 end
             end
@@ -1151,27 +1202,33 @@ else
         barre_avancement('PLUS')
     end
     
-
     % SAVING: save file
     if isfield(resultat,'save') && resultat.save
         Result_indicateur.(studyVarName).Legende = legende.indicateurs;
         Result_indicateur.(studyVarName).plan = params.plan;
         save(resultat.save_path,'Result_indicateur')
+        clear res_type studyVarName studyPlageName Result_indicateur idv
     end
-
     
+    if resultat.range_temporal==-1
+        resultat.range_temporal = selected_range;
+    end
+    clear plageSet liste_choix selected_range
+
+
     etape=6;    
     save(fullfile(params.rep_result,local.noms.save))
 
 end
 
 
-%% export données
+%% Selection des sorties parmi les données valides
 if ~(etape>6)
 
-    if any([resultat.plage.temporel])
-        resultat.sorties_valide_index = 1:size(resultat.sorties,2);
+    if ~(resultat.range_temporal==0)
         resultat.sorties_valide=true(1,size(resultat.sorties,2));
+        resultat.sorties_valide_index = 1:size(resultat.sorties,2);
+        analyse.legende_sorties_valide = legende.sorties_all;
     else
         % Recherche des sorties ayant une dispertion non négligeable
         resultat.sorties_valide = var(resultat.sorties)>=0.0001;
@@ -1182,7 +1239,7 @@ if ~(etape>6)
                                 'PromptString','Sélection des sorties :',...
                                 'SelectionMode','multiple',...       'InitialValue',[1 4 11 14],...  
                                 'ListString',legende.sorties_all(resultat.sorties_valide),...
-                                'ListSize', [6*maxi 15*(sum(resultat.sorties_valide)+1)]);
+                                'ListSize', [10+6*maxi 15*(sum(resultat.sorties_valide)+1)]);
 
         if ok==0
             error('Arrêt par l''utilisateur.')
@@ -1201,22 +1258,11 @@ if ~(etape>6)
     analyse.legende_entrees = legende.vars(params.variables.vars_index,:);
 end
 
-if false
-    
-    ext_dat.nom = local.noms.etude; 
-    ext_dat.plan = params.plan(:,1:params.variables.vars_nb);
-    ext_dat.results = resultat.sorties(:,resultat.sorties_valide_index);
-    ext_dat.legende = legende;   
-    %    csvwrite(fullfile(params.rep_result,'resultat.csv'),resultat.sorties)
-
-    save(fullfile(params.rep_result,'data_to_exp.mat'), 'ext_dat')
-end
-
 
     
 %% Images
 
-if local.images.export
+if local.images.export && resultat.range_temporal==0
     fprintf('Enregistrement des images - entrées / sorties.\n');
     
     % Choix des points
@@ -1321,7 +1367,6 @@ if local.images.export
 
             end
             
-              
             if ~strcmpi({params.variables.infos(params.variables.vars_index(i)).loi},'Discret')
                     set(gca,'XLim',[min(params.plan(:,i)) max(params.plan(:,i))]);
 %                 if isempty(params.variables.infos(params.variables.vars_index(i)).limites)
@@ -1349,7 +1394,7 @@ end
 
 %% Images 2 (entre les sorties)
 
-if local.images.export2
+if local.images.export2 && resultat.range_temporal==0
     fprintf('Enregistrement des images - sorties / sorties.\n');
     
     % Choix des points
@@ -1472,30 +1517,173 @@ else
     etape=7;
     save(fullfile(params.rep_result,local.noms.save))
 
-    
 end
-%% 7 Interface graphique
-fprintf('=== %s ===\n',local.noms.etude);
-disp('Fin !!!')
+
+%% 7 Graphiques
+
+bilan.name = params.titre;
+%bilan.inputs = rmfield(params.variables.infos(params.variables.vars_index),'actif'); 
+bilan.inputs = params.variables.infos(params.variables.actif); 
+bilan.plan = params.plan;
+bilan.legende.inputs = legende.vars;
+bilan.legende.outputs = legende.sorties_all;
+bilan.datas = resultat.sorties;
+bilan.SIoutputs = resultat.sorties_valide;
+if isfield(analyse,'SI_rbdfast')
+    SI= analyse.SI_rbdfast;
+elseif isfield(analyse,'SI_sobol')
+    SI= analyse.SI_sobol;
+elseif isfield(analyse,'PC_Infos')
+    error('To be defined')
+else
+    SI=[];
+end
+bilan.SI = SI;      % SI is used after
+
+assignin('base','bilan',bilan)
+
+disp('END')
+fprintf('\n\n=== %s ===\n',local.noms.etude);
+disp('List of the inputs:')
+disp(analyse.legende_entrees(:,1))
+
+disp('List of the outputs:')
+disp(analyse.legende_sorties_valide)
 
 
+disp('Means Values')
+disp(analyse.M)
+disp('Variance Values')
+disp(analyse.V)
+if isfield(analyse,'SI_rbdfast')
+    disp('Sensitivity Index Values (RBD-FAST Method)')
+    disp(analyse.SI_rbdfast)
+end
+if isfield(analyse,'SI_sobol')
+    disp('Sensitivity Index Values (Sobol Method)')
+    disp(analyse.SI_sobol)
+end
 
-%fichier = fullfile(params.rep_result,sprintf('%s.mat',params.liste_fichier{1}));
-%aff_resultats(fichier)
+if ~(resultat.range_temporal==0)
+    % Création du répertoire de destination
+    rep_image = fullfile(params.rep_result,[local.noms.image '_temporal']); n=1;
+    while isdir(rep_image)
+        n=n+1;
+        rep_image=fullfile(params.rep_result,[local.noms.image '_temporal' '(' int2str(n) ')']);
+    end
+    mkdir(rep_image);
+    
+    % Selection of the range
+    k=resultat.range_temporal;
+    
+    
+    % ====== Sensitity analysis results ======
+    
+    % Select time step
+    if      size(SI,2) == 24
+        donne_dates = dates.h(1:24);
+    elseif      size(SI,2) == sum(resultat.plage(k).index_h)
+        donne_dates=dates.h(resultat.plage(k).index_h);
+    elseif  size(SI,2) == sum(resultat.plage(k).index)
+        donne_dates=dates.j(resultat.plage(k).index);
+    elseif  size(SI,2) == length(dates.h)
+        donne_dates=dates.h;
+    elseif  size(SI,2) == length(dates.j)
+        donne_dates=dates.j;
+    end
+    
+    SI(:,isnan(SI(1,:)))=0;
+    SI(SI(:)<0)=0;                  % can I ?
 
-% sortie_ref = 11;
-% nb_sortie = size(resultat.sorties,2)/2;
-% for l=0:1
-%     for k=1:nb_sortie
-%         
-%         plot(resultat.sorties(:,sortie_ref+nb_sortie*l),resultat.sorties(:,k+nb_sortie*l), '.')
-%         set(get(gca,'Xlabel'), 'String',legende.sorties_all{sortie_ref+nb_sortie*l}, 'FontSize', local.images.fontsize)
-%         set(get(gca,'Ylabel'),'String',legende.sorties_all{k+nb_sortie*l}, 'FontSize', local.images.fontsize)
-%         pause
-%     end
-% end
+    % Select only the relevant outputs
+    if size(SI,1)>5
+        filtre = find(max(SI,[],2)>0.1);
+    else
+        filtre = 1:size(SI,1);
+    end
 
-keyboard
+    % Sort according the mean effect
+    [~,I] = sort(mean(SI(filtre,:),2),'descend');
+    filtre = filtre(I);
+
+    h=figure;
+    if false    %Plot lines
+        hold on
+        plot(donne_dates, sum(SI(filtre,:),1), 'LineWidth', 2)
+        plot(donne_dates,SI(filtre,:)')
+        hold off
+        legend({'Total',analyse.legende_entrees{filtre,1}})
+    else        %Plot stacked area
+        area(donne_dates,SI(filtre,:)')
+        legend(analyse.legende_entrees{filtre,1})
+    end
+    
+    if max(sum(SI(filtre,:),1))>1.15
+        set(gca,'Ylim',[0, max(sum(SI(filtre,:),1))])
+    else
+        set(gca,'Ylim',[0, 1.15])
+    end
+    
+    title(analyse.legende_sorties)
+    
+    if donne_dates(end)-donne_dates(1)<=2 %less than 2 day of datas
+        set(gca,'XTick',1/24+[donne_dates(1):2/24:donne_dates(end)])
+        datetick('x','HH','keepticks')           
+        xlabel('hour')
+    else
+        datetick('x','dd/mm','keepticks')
+    end    
+    set(gca,'Xlim',[donne_dates(1), donne_dates(end)])
+    set(gca,'XGrid','on')
+    
+    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(INDICES).jpg',strtok(analyse.legende_sorties{:}),k)) )
+    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(INDICES).fig',strtok(analyse.legende_sorties{:}),k)) )
+
+    
+    % ====== Uncertainty analysis results ======    
+
+    % Include a reference simulation ???
+%    REFSIMUL = [];
+
+    A=quantile(resultat.sorties,[.025 .25 .50 .75 .975]);
+    disp('Temporal uncertainty analysis results')
+    disp('Interquartile moyen')
+    disp(nanmean(A(4,:)-A(2,:))  )
+    disp('Taux interquartile moyen')
+    disp(nanmean((A(4,:)-A(2,:))./(A(4,:)+A(2,:))) )
+    
+    
+    h=figure;
+    hold on
+    plot(donne_dates, max(resultat.sorties,[],1),  'LineStyle',':')
+    plot(donne_dates, A(1,:),  'LineStyle','-.')
+    plot(donne_dates, A(2,:),  'LineStyle','--')
+    plot(donne_dates, A(3,:),  'LineStyle','-', 'LineWidth', 2)    
+%   plot(donne_dates, REFSIMUL, 'color','red', 'LineStyle','-', 'LineWidth', 2)
+    plot(donne_dates, A(4,:),  'LineStyle','--')
+    plot(donne_dates, A(5,:),  'LineStyle','-.')
+    plot(donne_dates, min(resultat.sorties,[],1),  'LineStyle',':')
+    hold off   
+    
+    if donne_dates(end)-donne_dates(1)<=2 %less than 2 day of datas
+        set(gca,'XTick',1/24+[donne_dates(1):2/24:donne_dates(end)])
+        datetick('x','HH','keepticks')           
+        xlabel('hour')
+    else
+        datetick('x','dd/mm','keepticks')
+    end    
+    set(gca,'Xlim',[donne_dates(1), donne_dates(end)])
+    
+    set(gca,'XGrid','on')
+    legend({'100%','95%','50%','Mediane'})  %  , 'Reference'
+    title(analyse.legende_sorties)
+    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(QUANTILES).jpg',strtok(analyse.legende_sorties{:}),k)) )
+    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(QUANTILES).fig',strtok(analyse.legende_sorties{:}),k)) )
+
+end
+
+
+% Save sensitivity index results for MetaModel
 if false
     for s=1:length(analyse.PC_Infos)
         if isempty(analyse.PC_Infos(s).GSA)
@@ -1518,107 +1706,32 @@ if false
 end
 
 
+
+% Code for Temporal analysis of RBD FAST
+% See also end of EPLab\Toolbox\commun_analyse.m
 if false
     warning('Tambouille perso !!!!!!!!')
     % utilisation des variances via les indices:    
-    analyse.SI_rbdfast = bsxfun(@times, analyse.SI_rbdfast, analyse.V);
+    analyse.VI_rbdfast = bsxfun(@times, analyse.SI_rbdfast, analyse.V);
     % utilisation des signs:
-    analyse.SI_rbdfast(:,1) = analyse.SI_rbdfast(:,1).*analyse.signe(:,1);
-    for a=2:size(analyse.SI_rbdfast,2)
-        analyse.SI_rbdfast(:,a) = analyse.SI_rbdfast(:,a-1) + analyse.SI_rbdfast(:,a).*analyse.signe(:,a);
+    analyse.VI_rbdfast(:,1) = analyse.VI_rbdfast(:,1).*analyse.signe(:,1);
+    for a=2:size(analyse.VI_rbdfast,2)
+        analyse.VI_rbdfast(:,a) = analyse.VI_rbdfast(:,a-1) + analyse.VI_rbdfast(:,a).*analyse.signe(:,a);
     end
 
 end
 
-if any([resultat.plage.temporel])
-    % Création du répertoire de destination
-    rep_image = fullfile(params.rep_result,[local.noms.image '_temporel_diff']);
-    if ~isdir(rep_image)
-        mkdir(rep_image);         
-    end
-    
-    k=1; %PLAGE !!!!
-    
-    
-    if      size(analyse.SI_rbdfast,2) == sum(resultat.plage(k).index_h)
-        donne_dates=dates.h(resultat.plage(k).index_h);
-    elseif  size(analyse.SI_rbdfast,2) == sum(resultat.plage(k).index)
-        donne_dates=dates.j(resultat.plage(k).index);
-    elseif  size(analyse.SI_rbdfast,2) == length(dates.h)
-        donne_dates=dates.h;
-    elseif  size(analyse.SI_rbdfast,2) == length(dates.j)
-        donne_dates=dates.j;
-    end
-%   
-%donne_dates=[dates.j(resultat.plage(k).index(1:365)); dates.j(end)-dates.j(1)+dates.j(resultat.plage(k).index(1:365))];
-% donne_dates=[dates.h(resultat.plage(k).index_h(1:365*24)); dates.h(end)-dates.h(1)+dates.h(resultat.plage(k).index_h(1:365*24))];
-
-  tep= analyse.SI_rbdfast;
-  tep(:,isnan(tep(1,:)))=0;  
-  tep(tep(:)<0)=0;
-    filtre = find(max(tep,[],2)<100.01);
- %   if isempty(filtre), filtre = find(max(analyse.SI_rbdfast,[],2)>0.1); end
-   % [~,I] = sort(mean(analyse.SI_rbdfast(filtre,:),2),'descend');
-   % filtre = filtre(I);
-    h=figure;
-%     hold on
-%     plot(donne_dates, sum(analyse.SI_rbdfast(filtre,:),1), 'LineWidth', 2)
-%     plot(donne_dates,tep')
-%     hold off
-    area(donne_dates,tep')
-
-    set(gca,'Ylim',[0, 1.15])   %1.8*max(sum(analyse.SI_rbdfast(filtre,:),1))
-    
-    %legend({'Total',analyse.legende_entrees{filtre,1}})
-    legend(analyse.legende_entrees{filtre,1})
-    title(analyse.legende_sorties)
-    if donne_dates(end)-donne_dates(1)<2
-%         set(gca,'XTick',[donne_dates(1):2/24:donne_dates(end) donne_dates(end)])
-%         datetick('x','HH','keepticks')      
-        set(gca,'XTick',[735979+1/24:2/24:735980])
-        datetick('x','HH','keepticks')
-        set(gca,'Xlim',[735979+1/24, 735980.000001])
-        xlabel('hour')
-    else
-        datetick('x','dd/mm','keepticks')
-    end
-    set(gca,'XGrid','on')
-    
-    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(INDICES).jpg',strtok(analyse.legende_sorties{:}),k)) )
-    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(INDICES).fig',strtok(analyse.legende_sorties{:}),k)) )
-
-global extract_median
-  
-    h=figure;
-    A=quantile(resultat.sorties,[.025 .25 .50 .75 .975]);
-    
-    disp('interquartile moyen')
-    disp('taux interquartile moyen')
-    [mean(A(4,:)-A(2,:)) ;     mean((A(4,:)-A(2,:))./(A(4,:)+A(2,:))) ]
-    
-    hold on
-%     set(gca,'LineStyleOrder', '-*|:|o')
-    plot(donne_dates, max(resultat.sorties,[],1),  'LineStyle',':')
-    plot(donne_dates, A(1,:),  'LineStyle','-.')
-    plot(donne_dates, A(2,:),  'LineStyle','--')
-    plot(donne_dates, A(3,:),  'LineStyle','-', 'LineWidth', 2)    
- %   plot(donne_dates, extract_median{5}.temp_T(:,resultat.plage(k).index_h(17521:26280)), 'color','red', 'LineStyle','-', 'LineWidth', 2)
-    plot(donne_dates, A(4,:),  'LineStyle','--')
-    plot(donne_dates, A(5,:),  'LineStyle','-.')
-    plot(donne_dates, min(resultat.sorties,[],1),  'LineStyle',':')
-    hold off       
-    if donne_dates(end)-donne_dates(1)<2
-        datetick('x','HH:MM','keepticks')
-    else
-        datetick('x','dd/mm','keepticks')
-    end
-    set(gca,'XGrid','on')
-    legend({'100%','95%','50%','Mediane'})  %  , 'Reference'
-    title(analyse.legende_sorties)
-    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(QUANTILES).jpg',strtok(analyse.legende_sorties{:}),k)) )
-    saveas(h, fullfile(rep_image,sprintf('%s-plage%d(QUANTILES).fig',strtok(analyse.legende_sorties{:}),k)) )
-
-end
+disp('For more information, type ''global analyse'' and look at the content of the variable ''analyse''.')
+fprintf('To reload the analysis: EPLab(''%s'')\n\n',fullfile(params.rep_result, 'config.m') ); % FileConfig')
 
 
 end
+
+
+function x = test_unused(x)
+% test for unused temporal indicator
+    x = isempty(x) || ( length(x)==1 && x(1)==0 ); % || any(x>0)
+end
+
+
+

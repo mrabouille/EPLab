@@ -1,4 +1,4 @@
-function liste = listnoms(variable,nomvariable,prefixe)
+function [liste,loc] = listnoms(variable,nomvariable,prefixe)
 if nargin<3 || isempty(prefixe)
     prefixe = '';
 end
@@ -11,6 +11,7 @@ else
 end
 
 liste=cell(0,1);
+loc = [];
 for k=temps'
     if nargin==1 || isempty(nomvariable)
         nom = k{1};
@@ -18,10 +19,23 @@ for k=temps'
         nom = horzcat(nomvariable, '.', k{1} );
     end
     
-    if eval(['isstruct(variable.' nom ')'])
-        liste=vertcat(liste,listnoms(variable,nom,prefixe) );
+    if length(variable)==1
+        if isstruct(variable.(nom))
+            liste=vertcat(liste,listnoms(variable,nom,prefixe) );
+        else
+            liste=vertcat(liste,sprintf('%s.%s',prefixe,nom) );
+        end
     else
-        
-        liste=vertcat(liste,[prefixe nom] );  
+        loc=vertcat(loc, [1:length(variable)]');
+        for l=1:length(variable)
+            if isstruct(variable(l).(nom))
+                liste=vertcat(liste,listnoms(variable(l),nom,sprintf('%s(%d)',prefixe,l)) );
+            else
+                liste=vertcat(liste,sprintf('%s(%d).%s',prefixe,l,nom) );
+            end
+        end
     end
+end
+if isempty(loc)
+    loc(1:length(liste),1)=1;
 end
