@@ -66,9 +66,9 @@ A FAIRE:
 %% Chargement
 
 format short; %format d'affichage des sorties MatLab(long: 16 chiffres)
-fclose('all');
-clc
+
 % clear all
+fclose('all');
 delete(timerfind)   % clear all timer fonctions
 
 % Vars=whos;
@@ -207,7 +207,7 @@ if exist('load_file','var') && load_file
                     'SelectionMode','single',...
                     'ListSize',[160 100],...
                     'InitialValue',etape,...
-                    'PromptString','Selectionnez l''étape de départ:');
+                    'PromptString','Selectionnez l''étape de départ:'); %#ok<NODEF>
     if ~ok, error('Arrêt par l''utilisateur.'), end    
     clear load_file liste_etapes ok
 
@@ -912,10 +912,10 @@ else
             disp(file)
             rethrow(exception)
         end
-                donnees=pre_traitement(params,dates,geometrie,donnees_brut,resultat.extract_lum);
+                resSimul=pre_traitement(params,dates,geometrie,donnees_brut,resultat.extract_lum);
 
                 % Enregistrement des données
-                save(fullfile(params.rep_result,[IDF_courant '.mat']),'donnees')
+                save(fullfile(params.rep_result,[IDF_courant '.mat']),'resSimul')
 
                 simulation.etats(id)=2;
                 save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
@@ -1122,7 +1122,7 @@ else
         IDF_courant = params.liste_fichier{id};
         load(fullfile(params.rep_result,[IDF_courant '.mat']))
         
-        indicateurs=etude_indicateurs(donnees,resultat.plage, resultat.range_temporal);
+        indicateurs=etude_indicateurs(resSimul,resultat.plage, resultat.range_temporal);
      
         if isempty(liste_choix)
             % listing des noms présents dans la legende
@@ -1225,8 +1225,9 @@ end
 if ~(etape>6)
 
     if ~(resultat.range_temporal==0)
-        resultat.sorties_valide_index = 1:size(resultat.sorties,2);
         resultat.sorties_valide=true(1,size(resultat.sorties,2));
+        resultat.sorties_valide_index = 1:size(resultat.sorties,2);
+        analyse.legende_sorties_valide = legende.sorties_all;
     else
         % Recherche des sorties ayant une dispertion non négligeable
         resultat.sorties_valide = var(resultat.sorties)>=0.0001;
@@ -1517,9 +1518,37 @@ else
 
 end
 
-
 %% 7 Graphiques
-fprintf('=== %s ===\n',local.noms.etude);
+
+bilan.name = params.titre;
+%bilan.inputs = rmfield(params.variables.infos(params.variables.vars_index),'actif'); 
+bilan.inputs = params.variables.infos(params.variables.actif); 
+bilan.plan = params.plan;
+bilan.legende.inputs = legende.vars;
+bilan.legende.outputs = legende.sorties_all;
+bilan.datas = resultat.sorties;
+bilan.SIoutputs = resultat.sorties_valide;
+if isfield(analyse,'SI_rbdfast')
+    SI= analyse.SI_rbdfast;
+elseif isfield(analyse,'SI_sobol')
+    SI= analyse.SI_sobol;
+elseif isfield(analyse,'PC_Infos')
+    error('To be defined')
+else
+    SI=[];
+end
+bilan.SI = SI;      % SI is used after
+
+assignin('base','bilan',bilan)
+
+disp('END')
+fprintf('\n\n=== %s ===\n',local.noms.etude);
+disp('List of the inputs:')
+disp(analyse.legende_entrees(:,1))
+
+disp('List of the outputs:')
+disp(analyse.legende_sorties_valide)
+
 
 disp('Means Values')
 disp(analyse.M)
@@ -1546,13 +1575,6 @@ if ~(resultat.range_temporal==0)
     % Selection of the range
     k=resultat.range_temporal;
     
-    if isfield(analyse,'SI_rbdfast')
-        SI= analyse.SI_rbdfast;
-    elseif isfield(analyse,'SI_sobol')
-        SI= analyse.SI_sobol;
-    elseif isfield(analyse,'PC_Infos')
-        error('To be defined')
-    end
     
     % ====== Sensitity analysis results ======
     
