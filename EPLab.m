@@ -7,7 +7,7 @@ function EPLab(FileConfig)
 %
 % Requirements
 % 
-%   - Le fichier idf doit contenir les lignes suivantes :
+%   - Le fichier idf doit contenirdsfsdf les lignes suivantes :
 %     Output:Surfaces:List,Details;% 
 %     les Output définies dans la variable 'sorties' ci-dessous
 %
