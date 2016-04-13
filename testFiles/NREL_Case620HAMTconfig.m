@@ -1,5 +1,5 @@
 %% EPLab version
-EPLab_version = '1.8.0';
+EPLab_version = '1.8.1';
 
 % Study Name
 local.noms.etude = 'NREL-Case620HAMT-test';
@@ -47,6 +47,11 @@ params.variables.infos = cell2struct(sortrows({
                 0, 'ThermostatCooling', 'UniformR', [24 5], [22 28];   %valeur {°C}
 
                -1, 'WindowType', 'Discret', 1, {'Simple vitrage' 'Double vitrage' 'Double vitrage PE'};
+
+
+
+
+
 },-1),...
 {'actif', 'nom' 'loi' 'moments' 'limites'}, 2);
 
@@ -93,6 +98,10 @@ local.vars_names=sortrows(	{
                 'Tsol', 'Température du sol', 'Température du sol', '[-]';
                 'albedo', 'Albedo', 'Albedo', '[-]';
                 'WindowType', 'WindowType', 'Window Type', '[-]';
+
+
+
+
 },3);
 
 
@@ -194,7 +203,7 @@ sorties = {
 };
 
 
-%% Sampling DEFINITION
+%% SAMPLING DEFINITION
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
 params.nb_tir=400;
 
@@ -204,12 +213,13 @@ params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 local.recap_plan = true;    % compare les variations initiales aux variations du plan 
 
 
-%% Simulation DEFINITION
+%% SIMULATION DEFINITION
 params.model = 'EnergyPlus';
 % Repertoire(s) d'instalation EnergyPlus (!! finir avec un '\' !!)
 Ep_dir = {'C:\EnergyPlusV8-3-0\',
           'C:\EnergyPlusV8-4-0\',
-          'C:\EnergyPlusV8-5-0\'};
+          'C:\EnergyPlusV8-5-0\'
+};
 
 local.nb_proc=7;
 local.auto_start=false; 	% Demarre automatiquement les simulations
@@ -217,9 +227,7 @@ local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de si
 
 
 
-%% OUTPUT SHAPINGS
-resultat.extract_lum=false;
-resultat.range_temporal = 1;	%To run a temporal analysis define ID of the range, otherwise 0 
+%% OUTPUT SHAPING
 
 % Study ranges
 resultat.plage(1).nom = 'Week';
@@ -230,6 +238,9 @@ resultat.plage(1).fin = '31/12';
 % resultat.plage(2).debut = '01/01';
 % resultat.plage(2).fin = '31/12';
 
+resultat.range_temporal = 0;	%To run a temporal analysis define ID of the range, // '-1' = all ranges
+
+resultat.extract_lum=false;
 
 %% RESUTS EXPORT
 % Saving of all indicateur results
@@ -237,9 +248,10 @@ resultat.save = false;      % save the values calculated
 resultat.save_path = '';    % path or mat-file to save the values (several studies can be added in the same file)
 
 
-% Création des images
+% Création des images  (Not for temporal analysis)
 local.images.export=false;      % active l'export entrées / sorties
 local.images.export2=false;     % active l'export sorties / sorties
+
 local.images.colors=false;
 local.images.visible = 'off';   % affiche les courbes (ralenti)
 local.images.nbs_point = 0;   % limite le nombre de points des graphs, off=0
@@ -270,7 +282,6 @@ analyse.bootstrap_param.save = true;
 
 
 
-
 %% OTHER DEFINITIONS
 % Nom des differents fichiers/répertoires
 local.noms.data = 'simul_';
@@ -279,7 +290,6 @@ local.noms.simul = 'simulations_';
 local.noms.image = 'images';
 local.noms.save = 'analyse.mat';
 local.noms.indicateurs = 'results_indicateur.mat';
-local.noms.toolsPath = 'Toolbox';
 
 % Paramètres d'affichage
 affichage.largeur=100;      % Largeur de la fenetre de commande

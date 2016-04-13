@@ -1,5 +1,6 @@
 function [c, matches] = strsplit(str, aDelim, varargin)
 %STRSPLIT  Split string at delimiter
+%SAME AS R2014 JUST FOR BACKWARD COMPATIBILITY OF MATLAB OLDER THAN R2013a !!!!
 %   C = STRSPLIT(S) splits the string S at whitespace into the cell array
 %   of strings C.
 %
@@ -65,7 +66,9 @@ function [c, matches] = strsplit(str, aDelim, varargin)
 
 %   Copyright 2012 The MathWorks, Inc.
 
-narginchk(1, Inf);
+if nargin<1
+    error('Not enough input arguments.')
+end
 
 % Initialize default values.
 collapseDelimiters = true;

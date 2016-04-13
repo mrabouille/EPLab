@@ -87,6 +87,8 @@ global legende
 
 local=[]; params=[]; simulation=[]; resultat=[]; geometrie=[]; analyse=[]; affichage=[]; legende=[];
 
+% Import des Toolbox
+addpath(genpath(fullfile(pwd,'Toolbox')),'-begin')
 
 % Chargement d'un fichier de configuration
 if ~exist('FileConfig','var')
@@ -111,14 +113,11 @@ end
 FileConfig = fullfile(LocalPath,FileConfig);
 run(FileConfig)
 
-if ~strcmp(EPLab_version, '1.8.0')
-    error('Wrong version of the config file.')
+if ~strcmp(EPLab_version, '1.8.1')
+    error('Wrong version of the config file.\nEPLab:\t1.8.1\nconfig:\t%s\n',EPLab_version)
 end
 
 %% Initialisation
-
-% Import des Toolbox
-addpath(genpath(fullfile(pwd,local.noms.toolsPath)),'-begin')
 
 % Recherche du fichier de sauvegarde
 if exist(fullfile(LocalPath,local.noms.save) ,'file')
@@ -183,7 +182,9 @@ else
     clear exist_simul exist_result
 end
 
-fprintf('=== %s ===\n',local.noms.etude);
+fprintf('\n\n\n======%s======\n',repmat('=',1,length(local.noms.etude)) );
+fprintf('===== %s =====\n',local.noms.etude);
+fprintf('======%s======\n\n',repmat('=',1,length(local.noms.etude)) );
 fprintf('appel direct: EPLab(''%s'') \n',fullfile(params.rep_result, 'config.m') ); % FileConfig
 
 % Chargement d'une simulation précédente
