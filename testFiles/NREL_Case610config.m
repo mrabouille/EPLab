@@ -1,5 +1,5 @@
 %% EPLab version
-EPLab_version = '1.8.0';
+EPLab_version = '1.8.1';
 
 % Study Name
 local.noms.etude = 'NREL-Case610-test';
@@ -129,7 +129,7 @@ sorties = {
 };
 
 
-%% Sampling DEFINITION
+%% SAMPLING DEFINITION
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
 params.nb_tir=200;
 
@@ -139,7 +139,7 @@ params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 local.recap_plan = true;    % compare les variations initiales aux variations du plan 
 
 
-%% Simulation DEFINITION
+%% SIMULATION DEFINITION
 params.model = 'EnergyPlus';
 % Repertoire(s) d'instalation EnergyPlus (!! finir avec un '\' !!)
 Ep_dir = {'C:\EnergyPlusV8-3-0\'
@@ -153,7 +153,7 @@ local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de si
 
 
 
-%% OUTPUT SHAPINGS
+%% OUTPUT SHAPING
 
 % Study ranges
 resultat.plage(1).nom = 'ColdMonth';
@@ -208,7 +208,6 @@ analyse.bootstrap_param.save = true;
 
 
 
-
 %% OTHER DEFINITIONS
 % Nom des differents fichiers/répertoires
 local.noms.data = 'simul_';
@@ -217,7 +216,6 @@ local.noms.simul = 'simulations_';
 local.noms.image = 'images';
 local.noms.save = 'analyse.mat';
 local.noms.indicateurs = 'results_indicateur.mat';
-local.noms.toolsPath = 'Toolbox';
 
 % Paramètres d'affichage
 affichage.largeur=100;      % Largeur de la fenetre de commande
