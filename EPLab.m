@@ -1101,9 +1101,8 @@ else
                 if ~strcmp('Yes',questdlg(sprintf('This Study have been saved before.\nDo you want erase the previous values?'),local.noms.etude,'Yes','No','No'))
                     error('Arrêt par l''utilisateur.')
                 end
-            else
-                Result_indicateur.(studyVarName) = [];
             end
+            Result_indicateur.(studyVarName).(res_type) = [];
         end
         Result_indicateur.(studyVarName).(res_type) = struct('Plage',{resultat.plage.nom});
         
@@ -1168,6 +1167,8 @@ else
                     selected_range = liste_idplage(selection);
                     liste_choix = liste(selection);
                     break
+                else
+                    uiwait(warndlg('For temporal analysis, we allow only one output.','!! Warning !!'))
                 end
             end
             
@@ -1290,7 +1291,7 @@ if local.images.export && resultat.range_temporal==0
     barre_avancement(0)
     
     % Affichage (ou pas) des figures lors de leur création
-    hFig=figure('Visible',local.images.visible);    
+    hFig=figure('Visible',local.images.visible);
     
     % Recherche la première entrée discrète
     var_discrete = find(strcmpi({params.variables.infos(params.variables.vars_index).loi},'Discret'),1);
@@ -1315,7 +1316,7 @@ if local.images.export && resultat.range_temporal==0
         
         % Boucle sur les variables
         for i=1:params.variables.vars_nb
-
+            set(groot,'CurrentFigure',hFig);
 %            fprintf('paramètre: %d   //  sortie: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.vars{i,1}));
   
             % S'il n'y a pas d'entrée discrete
@@ -1396,103 +1397,106 @@ end
 
 if local.images.export2 && resultat.range_temporal==0
     fprintf('Enregistrement des images - sorties / sorties.\n');
-    
-    % Choix des points
-    points = find(simulation.etats==2);
-    if ~isfield(local.images, 'nbs_point') || local.images.nbs_point == 0
-        local.images.nbs_point = params.nb_tir;
-    end    
-    nb_point = min(length(points),local.images.nbs_point);
-    if local.images.random
-        points = points(randperm(length(points)));
-    end 
-    points = points(1:nb_point);
-    
-    
-    % Création du répertoire de destination
-    rep_image = fullfile(params.rep_result,[local.noms.image '_sorties']); n=1;
-    while isdir(rep_image)
-        n=n+1;
-        rep_image=fullfile(params.rep_result,[local.noms.image '_sorties' '(' int2str(n) ')']);
-    end
-    mkdir(rep_image); 
-   
-    % Def. de la barre d'avancement
-    affichage.nb_tir = factorial(sum(resultat.sorties_valide))/(2*factorial(sum(resultat.sorties_valide)-2));
-    barre_avancement(0)
-    
-    % Affichage (ou pas) des figures lors de leur création
-    hFig=figure('Visible',local.images.visible);    
-    
-    % Recherche la première entrée discrète
-    var_discrete = find(strcmpi({params.variables.infos(params.variables.vars_index).loi},'Discret'),1);
-    if ~isempty(var_discrete)
-        % Choix des couleurs (ou noir et blanc) et des marqueurs en
-        % fonction du nombre de nivaux
-        var_nbs_niv=length(params.variables.infos(params.variables.vars_index(var_discrete)).limites);
-        if local.images.colors
-            col=hsv(var_nbs_niv);
-            form = {'.','.','.','.'};
-        else
-            col=zeros(var_nbs_niv);
-            form = {'^','s','o','.'};
+    if sum(resultat.sorties_valide)<2
+        warning('You have to select more than one output to have some results.');
+    else
+        % Choix des points
+        points = find(simulation.etats==2);
+        if ~isfield(local.images, 'nbs_point') || local.images.nbs_point == 0
+            local.images.nbs_point = params.nb_tir;
+        end    
+        nb_point = min(length(points),local.images.nbs_point);
+        if local.images.random
+            points = points(randperm(length(points)));
+        end 
+        points = points(1:nb_point);
+
+
+        % Création du répertoire de destination
+        rep_image = fullfile(params.rep_result,[local.noms.image '_sorties']); n=1;
+        while isdir(rep_image)
+            n=n+1;
+            rep_image=fullfile(params.rep_result,[local.noms.image '_sorties' '(' int2str(n) ')']);
         end
-    end
-    
-    % Création des figures
-    % Boucle sur les sorties axe x
-    for i=1:size(resultat.sorties,2)  %  [11,11+size(resultat.sorties,2)/2,13,26]      
-        % Si sortie non pertinante -> sortie suivante
-        if ~resultat.sorties_valide(i), continue, end;
-        
-        % Boucle sur les sorties axe y
-        for j=i+1:size(resultat.sorties,2)
-            % Si sortie non pertinante -> sortie suivante
-            if i==j || ~resultat.sorties_valide(j), continue, end;            
-            
-%            fprintf('sortie1: %d   //  sortie2: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.sorties_all{i}));
-  
-            % S'il n'y a pas d'entrée discrete
-            if isempty(var_discrete)
-                % plot de toutes les données
-                h=plot(resultat.sorties(points,i),resultat.sorties(points,j),'.');
-                set (h,'color','k', 'LineStyle','none', 'MarkerSize',local.images.markersize)
-           
+        mkdir(rep_image); 
+
+        % Def. de la barre d'avancement
+        affichage.nb_tir = factorial(sum(resultat.sorties_valide))/(2*factorial(sum(resultat.sorties_valide)-2));
+        barre_avancement(0)
+
+        % Affichage (ou pas) des figures lors de leur création
+        hFig=figure('Visible',local.images.visible);    
+
+        % Recherche la première entrée discrète
+        var_discrete = find(strcmpi({params.variables.infos(params.variables.vars_index).loi},'Discret'),1);
+        if ~isempty(var_discrete)
+            % Choix des couleurs (ou noir et blanc) et des marqueurs en
+            % fonction du nombre de nivaux
+            var_nbs_niv=length(params.variables.infos(params.variables.vars_index(var_discrete)).limites);
+            if local.images.colors
+                col=hsv(var_nbs_niv);
+                form = {'.','.','.','.'};
             else
-            % S'il y a au moins une entrée discrete            
-
-                % Boucle sur chaque niveau (de la variable discrète)
-                for k=1:var_nbs_niv
-                    % Selectionne les données correspondantes au niveau
-                    filtre = points([params.plan(points,var_discrete)]==k);
-
-                    h=plot(resultat.sorties(filtre,i),resultat.sorties(filtre,j));                  
-
-                    % Mise en forme
-                    set (h,'color','k', 'LineStyle','none', 'Marker',form{k},'MarkerSize',local.images.markersize, 'Color',col(k,:))
-                    hold on %la fct se répéte mais la fig préc est écrasée.
-                end
-                %legend(regexprep(params.variables.infos(params.variables.vars_index(multi)).moments(2:end), '_', ' '),'Location','Best','Orientation','vertical')
-                legend(gca,params.variables.infos(params.variables.vars_index(var_discrete)).limites,'Location','Best','Orientation','vertical')
-                hold off
-
+                col=zeros(var_nbs_niv);
+                form = {'^','s','o','.'};
             end
+        end
+
+        % Création des figures
+        % Boucle sur les sorties axe x
+        for i=1:size(resultat.sorties,2)  %  [11,11+size(resultat.sorties,2)/2,13,26]      
+            % Si sortie non pertinante -> sortie suivante
+            if ~resultat.sorties_valide(i), continue, end;
+
+            % Boucle sur les sorties axe y
+            for j=i+1:size(resultat.sorties,2)
+                % Si sortie non pertinante -> sortie suivante
+                if i==j || ~resultat.sorties_valide(j), continue, end;            
+
+    %            fprintf('sortie1: %d   //  sortie2: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.sorties_all{i}));
+
+                % S'il n'y a pas d'entrée discrete
+                if isempty(var_discrete)
+                    % plot de toutes les données
+                    h=plot(resultat.sorties(points,i),resultat.sorties(points,j),'.');
+                    set (h,'color','k', 'LineStyle','none', 'MarkerSize',local.images.markersize)
+
+                else
+                % S'il y a au moins une entrée discrete            
+
+                    % Boucle sur chaque niveau (de la variable discrète)
+                    for k=1:var_nbs_niv
+                        % Selectionne les données correspondantes au niveau
+                        filtre = points([params.plan(points,var_discrete)]==k);
+
+                        h=plot(resultat.sorties(filtre,i),resultat.sorties(filtre,j));                  
+
+                        % Mise en forme
+                        set (h,'color','k', 'LineStyle','none', 'Marker',form{k},'MarkerSize',local.images.markersize, 'Color',col(k,:))
+                        hold on %la fct se répéte mais la fig préc est écrasée.
+                    end
+                    %legend(regexprep(params.variables.infos(params.variables.vars_index(multi)).moments(2:end), '_', ' '),'Location','Best','Orientation','vertical')
+                    legend(gca,params.variables.infos(params.variables.vars_index(var_discrete)).limites,'Location','Best','Orientation','vertical')
+                    hold off
+
+                end
 
 
-            set(get(gca,'Xlabel'),'String',legende.sorties_all{i}, 'FontSize', local.images.fontsize)
-            set(get(gca,'Ylabel'),'String',legende.sorties_all{j}, 'FontSize', local.images.fontsize)
-            set(gca,'XLim',scaling(resultat.sorties(points,i)), 'FontSize', local.images.fontsize, 'XGrid', 'on');
-            set(gca,'YLim',scaling(resultat.sorties(points,j)), 'FontSize', local.images.fontsize, 'YGrid', 'on');
+                set(get(gca,'Xlabel'),'String',legende.sorties_all{i}, 'FontSize', local.images.fontsize)
+                set(get(gca,'Ylabel'),'String',legende.sorties_all{j}, 'FontSize', local.images.fontsize)
+                set(gca,'XLim',scaling(resultat.sorties(points,i)), 'FontSize', local.images.fontsize, 'XGrid', 'on');
+                set(gca,'YLim',scaling(resultat.sorties(points,j)), 'FontSize', local.images.fontsize, 'YGrid', 'on');
 
-            title(sprintf('%s - %s',legende.sorties_all{i},legende.sorties_all{j}))
-            saveas(h, fullfile(rep_image,sprintf('%d-%d.jpg',i,j)) )
+                title(sprintf('%s - %s',legende.sorties_all{i},legende.sorties_all{j}))
+                saveas(h, fullfile(rep_image,sprintf('%d-%d.jpg',i,j)) )
 
-            barre_avancement('PLUS');
-        end  
+                barre_avancement('PLUS');
+            end  
+        end
+        close(hFig)
+        clear i j n h hFig dossier nbs_niv
+        barre_avancement('FIN')
     end
-    close(hFig)
-    clear i j n h hFig dossier nbs_niv
-    barre_avancement('FIN')
 end
 
 
