@@ -1101,9 +1101,8 @@ else
                 if ~strcmp('Yes',questdlg(sprintf('This Study have been saved before.\nDo you want erase the previous values?'),local.noms.etude,'Yes','No','No'))
                     error('Arrêt par l''utilisateur.')
                 end
-            else
-                Result_indicateur.(studyVarName) = [];
             end
+            Result_indicateur.(studyVarName).(res_type) = [];
         end
         Result_indicateur.(studyVarName).(res_type) = struct('Plage',{resultat.plage.nom});
         
@@ -1290,7 +1289,7 @@ if local.images.export && resultat.range_temporal==0
     barre_avancement(0)
     
     % Affichage (ou pas) des figures lors de leur création
-    hFig=figure('Visible',local.images.visible);    
+    hFig=figure('Visible',local.images.visible);
     
     % Recherche la première entrée discrète
     var_discrete = find(strcmpi({params.variables.infos(params.variables.vars_index).loi},'Discret'),1);
@@ -1315,7 +1314,7 @@ if local.images.export && resultat.range_temporal==0
         
         % Boucle sur les variables
         for i=1:params.variables.vars_nb
-
+            set(groot,'CurrentFigure',hFig);
 %            fprintf('paramètre: %d   //  sortie: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.vars{i,1}));
   
             % S'il n'y a pas d'entrée discrete
