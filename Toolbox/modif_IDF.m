@@ -149,7 +149,7 @@ else
                     operation = ['V' A{k,2}(1) 'X'];
                     A{k,2}(1)=[];
                 elseif  ~isempty(strfind( '#', A{k,2}(1)))
-                    [operation,A{k,2}] = regexp(A{k,2},'#([\w\(\)\[\]\^.*+-/]*)#|#*','tokens','split');
+                    [operation,A{k,2}] = regexp(A{k,2},'#([\w\(\)\[\]\^.*+-/$:\\]*)#|#*','tokens','split');
                     if isempty(operation{1})
                         error('La ligne suivante n''a pas été interprétée:\n%s',ligne)
                     end
@@ -158,14 +158,14 @@ else
                 end
                 if ~isempty(operation)                    
                     % remplacement du nom des variables presentes dans l'operation                    
-                    for a=1:length({variables.nom})                  
-                        if strfind(operation, variables(a).nom)~=0
+                    for a=1:length({variables.nom})
+                        if ~isempty(strfind(operation, variables(a).nom))
                             operation = strrep(operation, variables(a).nom, num2str(valeurs(a),'%f') );
                             trouve(a)=true; % La variable est présente
                         end
                     end
-                    if strfind(operation, '$IDSIM$')~=0
-                        operation = strrep(operation, '$IDSIM$', num2str(IDSim, '%d') );
+                    if ~isempty(strfind(operation, '$IDSim$'))
+                        operation = strrep(operation, '$IDSim$', num2str(IDSim, '%d') );
                     end
                     operation = strrep(operation, 'V', '%1$f'); % valeur initiale
                     operation = strrep(operation, 'X', '%2$f'); % valeur échantillonné
@@ -182,7 +182,8 @@ else
                 rech = strcmp({variables.nom}, A{k,1});
                 if any(rech) 
                     % Identification du type de donnée et mise en forme
-                    index = min(find(rech)); %id de la variable                    
+                    index = min(find(rech)); %id de la variable
+                    trouve(index)=true;     % cette variable à été trouvée
                     if strcmpi(variables(index).loi, 'Discret')
                         if valeurs(index)>length(variables(index).limites)
                             error('Value ''%d'' out of range for the input ''%s''.\n',valeurs(index),variables(index).nom)
@@ -197,9 +198,12 @@ else
                         chaine = num2str(valeurs(index), '%f');
                     end
                     
-                elseif strcmp(A{k,1}, '$IDSIM$')
+                elseif strcmp(A{k,1}, 'IDSim')
                     % La variable correspond a l ID de la simulation
                     chaine = num2str(IDSim, '%d');
+                elseif strcmp(A{k,1}, 'String')
+                    % Do nothing
+                    chaine = '';
                 else
                     if affichage, fprintf('Erreur, variable #%s# non trouvée !\n', A{k,1} );  end
                     continue
@@ -209,7 +213,7 @@ else
 
 
                 % Ajout de la modification dans la pile
-                trouve(index)=true;
+                
                 for l=lignes(:)'
                     pile = vertcat (pile, {l, A{k,1}, operation, chaine} );
                     nb_com = nb_com + 1;
@@ -281,11 +285,14 @@ else
                 % Traitement de la ligne en cours
                 while ~isempty(pile) && pile{1,1}==0
                     if isempty(pile{1,3})
-                        ligne_val = pile{1,4};                    
+                        ligne_val = pile{1,4};
+                    elseif strcmp(pile{1,2},'String')
+                        ligne_val = pile{1,3};
                     else  % Opération mathématique
                         
                         V = str2num(ligne_val);     % Valeur initiale de la ligne
                         X = str2num(pile{1,4});     % Valeur echantillonne
+                        
                         if isempty(V) || isempty(X)
                             error(sprintf('Opération matématique impossible !\n Variable:\t''%s''\n Opération:\t''%s''\n Ligne:\t''%s''', pile{1,2}, strcat(ligne_val,pile{1,[3 4]}),ligne))
                         end
