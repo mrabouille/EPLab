@@ -6,7 +6,7 @@ time = nan(length(liste),1);
 if nargin==4 && numel(old_etat)==numel(liste)
     etat = old_etat(:);
 end
-essais = ~etat;
+essais = etat<1;
 
 
 switch upper(model)
@@ -30,25 +30,15 @@ switch upper(model)
         end
 
     case {'DOMUS'}
-        error('Tem que definir o modelo !')
- %{       
-       > essais : simulations to be checked
-         for id=find(essais')
-            
-           > change for terminou.txt  
-            file = fullfile(rep,liste{id},'eplusout.end');
-        
-        > what must be done if a 'sim2' is here ????
-
-            if exist ( file ,'file' )
-                etat(id) = 1; % ok
-                time(id) = 0   %  can you hae the simulation time ????
+        for id=find(essais')
+            file = fullfile(rep,['#' liste{id} '.idf'],'saidas','sim001','terminou.txt');
+            if exist(file,'file')
+                etat(id) = 1;
+                time(id) = nan;
             else
                 etat(id) = -1; % erreur présente
-
             end
         end
-  %}      
     otherwise
         error('Modele non reconnu')
 end
