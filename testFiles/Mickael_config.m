@@ -149,7 +149,7 @@ simulation.model_dir = {'C:\EnergyPlusV8-3-0\'
 };
 
 local.nb_proc=7;
-local.auto_start=true; 	% Demarre automatiquement les simulations
+local.auto_start=false; 	% Demarre automatiquement les simulations
 local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de simulation
 
 

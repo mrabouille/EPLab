@@ -237,7 +237,7 @@ if exist('load_file','var') && load_file
         % Reprise pour simulations :
         % Infos sur les simulations déja produites
         load(fullfile(params.rep_result,local.noms.save), 'simulation')
-    if etape >= 3
+    if etape >= 4
         if isfield(simulation,'etats')&& any(simulation.etats>1)
             % Reprise pour l'extraction: données dans le rep. simulation
             load(fullfile(params.rep_result,'commun.mat'))
@@ -767,7 +767,7 @@ else
         % == Test (de fin) des simulations ==
         t = timer('StartDelay', 0, 'Period', local.test_delay, 'ExecutionMode', 'fixedDelay', 'TasksToExecute', 10^10);
         t.TimerFcn = { @test_fin, local.test_delay };
-        t.ErrorFcn = { @(~,~) disp('Oups') };
+        t.ErrorFcn = { @(~,~) disp('Oups Timer ErrorFcn') };
         fprintf('   Attente des résultats... (Ctr+c pour forcer le démarrage)\n');
         % barre_avancement('RAZ')
         affichage.nb_tir = nb_simul;
@@ -923,19 +923,13 @@ else
             %% DOMUS
             
             fprintf('Extraction des données de simulation\n');
-            
             for id=find(simulation.etats==1)'
-                
-                
+
                 % Indice de la simulation étudiée
                 IDF_courant = params.liste_fichier{id};
                 resPath = fullfile(params.rep_simul,['#' IDF_courant '.idf'],'saidas','sim001');
                 
-                
                 resSimul = DomusExtract(resPath);
-            
-            
-            
             
                 % Enregistrement des données
                 save(fullfile(params.rep_result,[IDF_courant '.mat']),'resSimul')
@@ -944,75 +938,30 @@ else
                 save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
 
                 if etape == 4
+                    sorties_ext = [];
+                    
+                    if isfield(resSimul,'TUP')
+                        dates.vec = resSimul.TUP.timeVec;
+                        dates.h = resSimul.TUP.timeNum;
+                    elseif isfield(resSimul,'pixelcount')
+                        dates.vec = resSimul.pixelcount.sunTimeVec;
+                        dates.h = resSimul.pixelcount.sunTimeNum;
+                    end
+                    dates.id_j_h1 = find(dates.vec(:,4)==1); %première heure du jour
+                    dates.id_j_h24 = find(~dates.vec(:,4)); %derniere heure du jour
+                    dates.j = datenum( dates.vec(dates.id_j_h1,:) );   %dates journalieres sous forme de nombre
+                    dates.nb_j=size(dates.j,1);    %Nombre de jours de simulation
+                    dates.nb_h=size(dates.h,1);    %Nombre d'heures de simulation
+
+                    % Enregistrement des données
+                    save(fullfile(params.rep_result,'commun.mat'),'geometrie','sorties_ext','dates' )
+                    
                     etape=5;
                     save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
                 end
                 barre_avancement('PLUS')         
             end  
-            error('Tem que definir o modelo !')
-  %{          
-            
-            % == Informations de base ==
-            % une simulation a t elle dégà été extraite ?
-            if ~any(simulation.etats>1)
-                fprintf('Extraction des informations générales\n');
-
-                % selection de la 1ere simulation valide
-                k = find(simulation.etats==1,1, 'first');
-
-                % Vecteurs temporels
-> you have to make your own   search 'Supported File Formats' in the documetation
-                dates = find_temps(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.csv',params.liste_fichier{k})));
-
-                % Enregistrement des données
-                save(fullfile(params.rep_result,'commun.mat'),'dates' )
-
-                clear k
-            end
-            
-           > you have at least 1 good simulation, you can active the next step (make this just one time) 
-            etape=5;
-            save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
-
-            
-            
-            % == Informations spécifiques ==
-            
-            fprintf('Extraction des données de simulation\n');
-            
-    > for each simulation id  with  etats==1       
-            for id=find(simulation.etats==1)'
-
-                % Indice de la simulation étudiée
-                IDF_courant = params.liste_fichier{id};
-            
-> path of the results files
-                file =fullfile(params.rep_simul,sprintf('%1$s\\%1$s.csv',IDF_courant));
-
-> what must be done if a 'sim2' is here ????
-            
-            
-           >> for each datafile (you have to define these files !!!)
-                
-               > and read them
-                add datas into 'donnees'
-               'donnees' is a stucture !!!  search 'structures' in the documetation
-            
-           >>  end datafile loop
-            
-           > save thhe datas
-            save(fullfile(params.rep_result,[IDF_courant '.mat']),'donnees')
-            
-           > no error -> update the state of the current simuation 
-            simulation.etats(id)=2;   % 0=no extract /  1= simulation OK  / 2= simulation extracted
-           
-           > save the state of the current id
-            save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
-            
-
-            
-    end simulation id loop
-  %}          
+         
         otherwise
             error('Modele non reconnu')
     end
@@ -1251,8 +1200,9 @@ if ~(etape>6)
     else
         % Recherche des sorties ayant une dispertion non négligeable
         resultat.sorties_valide = var(resultat.sorties)>=0.0001;
-        resultat.sorties_valide_index = find(resultat.sorties_valide);
-
+        resultat.sorties_valide_index = find(resultat.sorties_valide);        
+        if isempty(resultat.sorties_valide_index) error('No valid results.'), end
+        
         maxi=0;  for m=legende.sorties_all(resultat.sorties_valide)', maxi = max(maxi,length(m{:}));  end
         [selection,ok] = listdlg('Name', 'Sorties à étudier',...
                                 'PromptString','Sélection des sorties :',...

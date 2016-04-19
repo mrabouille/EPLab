@@ -31,13 +31,35 @@ switch upper(model)
 
     case {'DOMUS'}
         for id=find(essais')
-            file = fullfile(rep,['#' liste{id} '.idf'],'saidas','sim001','terminou.txt');
+            
+            file = fullfile(rep,['#' liste{id} '.idf'],'saidas','sim001','simulationLog.txt');
             if exist(file,'file')
-                etat(id) = 1;
-                time(id) = nan;
-            else
-                etat(id) = -1; % erreur présente
+                fid = fopen(file,'r');
+                fseek(fid, -40, 'eof');
+                line = fscanf(fid,'%c')
+                if isempty(strfind(line, 'Execução terminada com sucesso !'))
+                    etat(id) = -1; % erreur présente
+                else
+                    etat(id) = 1; % ok
+                    
+                    frewind(fid); line = fgetl(fid);
+                    while ~strncmp(line,'@Inicio Simulacao',17), line = fgetl(fid); end
+                    tokenStart = regexp(line,'\D(\d+)/(\d+)/(\d+) - (\d+):(\d+):(\d+)', 'tokens');
+                    while ~strncmp(line,'@Fim simulacao',14), line = fgetl(fid); end
+                    tokenEnd = regexp(line,'\D(\d+)/(\d+)/(\d+) - (\d+):(\d+):(\d+)', 'tokens');
+                    
+                    time(id) = (datenum(str2double(tokenEnd{1})) - datenum(str2double(tokenStart{1})) )*24*3600;  % em seconds
+                end
+                fclose(fid)
             end
+            
+%             file = fullfile(rep,['#' liste{id} '.idf'],'saidas','sim001','terminou.txt');
+%             if exist(file,'file')
+%                 etat(id) = 1;
+%                 time(id) = nan;
+%             else
+%                 etat(id) = -1; % erreur présente
+%             end
         end
     otherwise
         error('Modele non reconnu')

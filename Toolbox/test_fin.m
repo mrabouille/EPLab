@@ -22,7 +22,7 @@ if isempty(test), test=true; end
 
 %pause(test_delay) % met en pause matlab pour attendre les simulations
 
-simulation.etats = test_sim(params.model,params.rep_simul,params.liste_fichier,simulation.etats);
+simulation.etats = test_sim(simulation.model,params.rep_simul,params.liste_fichier,simulation.etats);
 
 barre_avancement(sum(simulation.etats~=0))
 

@@ -188,11 +188,21 @@ if ~range_temporal==0
         % legende.indicateurs(k).range_cond_neg =  {['Conduction face interne des surfaces Toiture neg ' plages(1).nom ' [kWh/m^2_(_t_o_i_t_)]']};
     end
 else
-  
-
+    
+    
     for k=1:length(plages)
-
-
+    
+    %% pixelcount       
+    if isfield(resSimul,'pixelcount')
+        indicateurs(k).pixelcount = [mean(resSimul.pixelcount.areaEns(plages(k).index_h,:),1)'];
+        if leg
+            legende.indicateurs(k).pixelcount = {
+               cellstrjoin( {'Moyenne AreaEns ', '-', [' ' plages(k).nom ' [-]']}, resSimul.pixelcount.surfaces(:,[3 2]))
+               };
+        end
+    end
+    
+    
     %% moyennes horaires
     % keyboard
     % plot(mean( reshape( resSimul.humdite.Tsurf_out{end}(plages(k).index_h),24,[] ) ,2))
@@ -205,8 +215,7 @@ else
 
 
     %% == Bilan aerolique ==
-
-
+    
     % == Bilan des échanges avec l'air: kWh par m2 habibable ==
     if isfield(resSimul,'bilan_air')
         indicateurs(k).bilan_air=[
