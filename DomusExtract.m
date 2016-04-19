@@ -106,7 +106,7 @@ if exist(fullfile(resPath,'pixelcount'),'dir')
         tokens = regexp(fileName{1},'(\w*) - (\w*).txt','tokens');
         if ~isempty(tokens)
             idSurface = idSurface+1;
-%                                    id         name          surface       filename
+%                                    id         zone          surface       filename
             resSimul.pixelcount.surfaces(idSurface,:) = {idSurface, tokens{1}{2}, tokens{1}{1}, fileName{1}};
         end
     end
@@ -115,7 +115,6 @@ if exist(fullfile(resPath,'pixelcount'),'dir')
         fid = fopen(file,'r');
         if fid == -1, error('Unable to read the file.'), end
         while ~strncmp('Área ens(%)',fgetl(fid),11), end
-        fgetl(fid); warning('skip first ligne at 00:00')
         datas = textscan(fid,'%f%f%f %f:%f:%f %f%f');
         
         resSimul.pixelcount.areaEns(:,k) = datas{1};
