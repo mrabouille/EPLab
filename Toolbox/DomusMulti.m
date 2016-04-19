@@ -16,7 +16,7 @@ nb_tir = max(size(IDFs));
 for i=1:nb_proc
     fid(i) = fopen(fullfile(rep,sprintf('SimPart%d.bat',i)),'w'); %#ok<AGROW>
 %    fprintf(fid(i), '@echo off\n');
-    fprintf(fid(i), 'cd "%s"\n',dir_model);
+    fprintf(fid(i), 'cd /d "%s"\n',dir_model);
 end
 
 for i=1:nb_tir
