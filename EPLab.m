@@ -760,7 +760,7 @@ else
 
         if isfield(local, 'auto_start') && local.auto_start==false
             dos(sprintf('Explorer /e,/select,%s &',fullfile(params.rep_simul,'SimMulti.bat')));
-            error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.');
+            error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.\rAppel direct:\rEPLab(''%s'')',fullfile(params.rep_result, 'config.m'));
         end
         
 
@@ -1089,8 +1089,15 @@ else
         IDF_courant = params.liste_fichier{id};
         load(fullfile(params.rep_result,[IDF_courant '.mat']))
         
-        indicateurs=etude_indicateurs(resSimul,resultat.plage, resultat.range_temporal);
-     
+        switch upper(simulation.model)
+            case {'E+','EP','ENERGYPLUS'}
+                indicateurs=indicateursEP(resSimul,resultat.plage, resultat.range_temporal);
+                
+            case {'DOMUS'}
+                indicateurs=indicateursDMS(resSimul,resultat.plage, resultat.range_temporal);
+        end
+        
+        
         if isempty(liste_choix)
             % listing des noms présents dans la legende
             if resultat.range_temporal==0
@@ -1284,7 +1291,7 @@ if local.images.export && resultat.range_temporal==0
         
         % Boucle sur les variables
         for i=1:params.variables.vars_nb
-            set(groot,'CurrentFigure',hFig);
+            try, set(groot,'CurrentFigure',hFig); end
 %            fprintf('paramètre: %d   //  sortie: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.vars{i,1}));
   
             % S'il n'y a pas d'entrée discrete

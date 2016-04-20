@@ -1,4 +1,4 @@
-function indicateurs=etude_indicateurs(resSimul, plages, range_temporal)
+function indicateurs=indicateursEP(resSimul, plages, range_temporal)
 
 %global geometrie
 global legende
@@ -191,18 +191,8 @@ else
     
     
     for k=1:length(plages)
-    
-    %% pixelcount       
-    if isfield(resSimul,'pixelcount')
-        indicateurs(k).pixelcount = [mean(resSimul.pixelcount.areaEns(plages(k).index_h,:),1)'];
-        if leg
-            legende.indicateurs(k).pixelcount = {
-               cellstrjoin( {'Moyenne AreaEns ', '-', [' ' plages(k).nom ' [-]']}, resSimul.pixelcount.surfaces(:,[3 2]))
-               };
-        end
-    end
-    
-    
+        
+        
     %% moyennes horaires
     % keyboard
     % plot(mean( reshape( resSimul.humdite.Tsurf_out{end}(plages(k).index_h),24,[] ) ,2))

@@ -141,7 +141,7 @@ sorties = {
 
 %% SAMPLING DEFINITION
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
-params.nb_tir=2;
+params.nb_tir=200;
 
 params.type_ech=4;      % 4:LHS-local 6:Halton_local 8:LPTau_local      //  1:random_global 3:RBD_global 5:LHS_global 7:Halton_global 9:LPTau_global  !!! global = [min max] of the 'limites' field & all uniform(used to find a solution)
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
@@ -160,7 +160,7 @@ simulation.model_dir = {'C:\EnergyPlusV8-3-0\'
 };
 
 local.nb_proc=7;
-local.auto_start=false; 	% Demarre automatiquement les simulations
+local.auto_start=true; 	% Demarre automatiquement les simulations
 local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de simulation
 
 

@@ -42,7 +42,7 @@ if (nargin > 3)
         
         locpath = pwd;
         cd(rep)
-        [status,result] = dos('SimMulti.bat');
+        [status,result] = dos('CALL SimMulti.bat');
         cd(locpath)
          
         if status
