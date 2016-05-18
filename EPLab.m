@@ -923,6 +923,11 @@ else
             %% DOMUS
             
             fprintf('Extraction des données de simulation\n');
+            
+            [year,~,~,~,~,~] = datevec(now);        % Be careful with the leap years
+            if leapyear(year), warning('Be careful is a leap year. See: DomusExtract()'); end
+            clear year
+
             for id=find(simulation.etats==1)'
 
                 % Indice de la simulation étudiée
@@ -933,9 +938,6 @@ else
             
                 % Enregistrement des données
                 save(fullfile(params.rep_result,[IDF_courant '.mat']),'resSimul')
-
-                simulation.etats(id)=2;
-                save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
 
                 if etape == 4
                     sorties_ext = [];
@@ -959,6 +961,10 @@ else
                     etape=5;
                     save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
                 end
+                
+                simulation.etats(id)=2;
+                save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
+                
                 barre_avancement('PLUS')         
             end  
          
@@ -992,8 +998,8 @@ else
     for k=1:length(resultat.plage)
         % Plage d'étude
         date = [ datenum(resultat.plage(k).debut, 'dd/mm');  
-                 datenum(resultat.plage(k).fin, 'dd/mm') ] + datenummx(0,0,0,dates.vec(1,4),dates.vec(1,5),dates.vec(1,6));
-
+                 datenum(resultat.plage(k).fin, 'dd/mm') ] + datenummx(0,0,0,1,0,0); % at 1H00
+        
         id_debut = find( dates.j==date(1) );
         id_fin = find( dates.j==date(2) );
         

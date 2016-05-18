@@ -1,5 +1,6 @@
 function resSimul = DomusExtract(resPath)
 
+[year,~,~,~,~,~] = datevec(now);        % Be careful with the leap years
 
 %{
 file = fullfile(resPath,'DadosRelatorios.txt');
@@ -76,7 +77,6 @@ if fid ~= -1
     resSimul.TUP.Tas = datas{1};
     resSimul.TUP.Humid = datas{2};
     
-    [year,~,~,~,~,~] = datevec(now);        % Be careful with the leap years
     resSimul.TUP.timeVec = horzcat(repmat(year,size(datas{1},1),1),datas{3:7});
     resSimul.TUP.timeNum = datenummx(resSimul.TUP.timeVec);  % built-in function undocumented
     
@@ -122,9 +122,10 @@ if exist(fullfile(resPath,'pixelcount'),'dir')
         fclose(fid);
     end
     
-    [year,~,~,~,~,~] = datevec(now);        % Be careful with the leap years
-    resSimul.pixelcount.sunTimeVec = horzcat(repmat(year,size(datas{1},1),1),datas{2:6});
-    resSimul.pixelcount.sunTimeNum = datenummx(resSimul.pixelcount.sunTimeVec);  % built-in function undocumented
+    datas{4} = datas{4}+1;  % time +1h00    
+    resSimul.pixelcount.sunTimeNum = datenummx(horzcat(repmat(year,size(datas{1},1),1),datas{2:6}));  % built-in function undocumented
+    resSimul.pixelcount.sunTimeVec = datevecmx(resSimul.pixelcount.sunTimeNum);
+    
     resSimul.pixelcount.sunAZM = datas{7};
     resSimul.pixelcount.sunALT = datas{8};
 end
