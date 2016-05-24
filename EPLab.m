@@ -7,7 +7,7 @@ function EPLab(FileConfig)
 %
 % Requirements
 % 
-%   - Le fichier idf doit contenir les lignes suivantes :
+%   - Le fichier idf doit contenirdsfsdf les lignes suivantes :
 %     Output:Surfaces:List,Details;% 
 %     les Output définies dans la variable 'sorties' ci-dessous
 %
@@ -237,7 +237,7 @@ if exist('load_file','var') && load_file
         % Reprise pour simulations :
         % Infos sur les simulations déja produites
         load(fullfile(params.rep_result,local.noms.save), 'simulation')
-    if etape >= 3
+    if etape >= 4
         if isfield(simulation,'etats')&& any(simulation.etats>1)
             % Reprise pour l'extraction: données dans le rep. simulation
             load(fullfile(params.rep_result,'commun.mat'))
@@ -353,14 +353,14 @@ if etape<4
         mkdir(params.rep_simul)
     end
 
-    switch upper(params.model)
+    switch upper(simulation.model)
         case {'E+','EP','ENERGYPLUS'}
             % Test Version E+
             IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
                         fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
                         fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))};
 
-            [Ep_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, Ep_dir);
+            [simulation.model_dir,IDF_dir,simulation.version]=checkVersionEP(IDF_dir, simulation.model_dir);
 
             if ~str2double(simulation.version)>8
                 error('Old releases of EnergyPlus are not supported since V8\nVersion: %s', simulation.version)
@@ -369,44 +369,39 @@ if etape<4
                 error('Version non configurée: ''%s''',simulation.version)
             end
             % Copie RunEplus modifié dans le dossier de simulation
-            modif_RunEplus(params.rep_simul, Ep_dir);
+            modif_RunEplus(params.rep_simul, simulation.model_dir);
             
         case {'DOMUS'}
-% Les modifications appostées par Lais Lagos             
-%{        
-   > where is the idf you are looking for ? (list of possible path)
-           IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
-                       fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
-                       fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))}; 
-   > where is the domus.exe // Le domus.exe on vérifie le fichier config.m
-            Domus_dir = 
-
-   > compare  DomusVersion and IdfVersion ... and by the way, test which path is the good one
-           [pass,Domus_dir]=checkVersionEP(IDF_dir, Domus_dir);
-
-usefull? i think you only have to check the idf and the domus path 
-Mickael vous pouvez vérifier cette partie du programme,vérification est
-valable, pour vérificar le chemin?
-
-Domus_dir = Domus_dir{1}
-           if ~exist(fullfile(Domus_dir, 'Domus.exe'),'file')
-               error('Arrêt Domus.')
-               
-           if isequal(Domus_dir,0)
-             error('Arrêt par l''utilisateur.')
-           end
-          else
-            if ~exist('IDF_dir','var') 
-               [IDF_dir,LocalPath] = uigetfile('*config*.m');
-             if isequal(IDF_dir,0)
-                error('Fichier de configuration non trouvé.')
-        end
-
-    ... and then, if no idf/domus -> error   else   select paths
-%}
-
-            error('Tem que definir o modelo !')
-        
+            IDF_dir = { fullfile(params.rep_result, sprintf('%s.idf',simulation.IDF_initial)),
+                        fullfile(LocalPath, sprintf('%s.idf',simulation.IDF_initial)),
+                        fullfile(pwd, sprintf('%s.idf',simulation.IDF_initial))};
+            for rep = IDF_dir'
+                if exist(rep{1},'file')
+                    IDF_dir=rep{1};
+                    break
+                end
+            end
+            if iscellstr(IDF_dir)
+                error(['Le fichier idf n''a pas été trouvé aux emplacements indiqués:' sprintf('\n%s',file{:})])
+            end
+            
+            % where is the domus.exe
+            if ~iscellstr(simulation.model_dir)
+                simulation.model_dir = {simulation.model_dir};
+            end
+            for rep = simulation.model_dir'
+                if exist(fullfile(rep{1},'Domus.exe'),'file')
+                    simulation.model_dir=rep{1};
+                    break
+                end
+            end
+            if iscellstr(simulation.model_dir)
+                error(['Le programme Domus.exe n''a pas été trouvé aux emplacements indiqués:' sprintf('\n%s',file{:})])
+            end
+            
+            % version check ?
+            
+            
         otherwise
             error('Modele non reconnu')
     end
@@ -426,15 +421,15 @@ Domus_dir = Domus_dir{1}
                 simulation.EPW.path = fullfile (LocalPath);    
             elseif exist ( fullfile (pwd, [simulation.EPW.name{1} '.epw']) ,'file' )
                 simulation.EPW.path = fullfile (pwd);
-            elseif exist ( fullfile ( Ep_dir,'WeatherData', [simulation.EPW.name{1} '.epw']) ,'file' )
-                simulation.EPW.path = fullfile ( Ep_dir,'WeatherData');
+            elseif exist ( fullfile ( simulation.model_dir,'WeatherData', [simulation.EPW.name{1} '.epw']) ,'file' )
+                simulation.EPW.path = fullfile ( simulation.model_dir,'WeatherData');
             else
                 error(['Le fichier météo ''%s'' n''a pas été trouvé. Défenissez la variable ''simulation.EPW.path''.\n'...
                     'Ou les répertoires suivants :\n  %s\n  %s\n  %s'],...
                     [simulation.EPW.name{1} '.epw'],...
                     fullfile(LocalPath),...
                     fullfile(pwd),...
-                    fullfile(Ep_dir,'WeatherData'));
+                    fullfile(simulation.model_dir,'WeatherData'));
             end
         end
         % Test des autres fichiers au même emplacement
@@ -457,14 +452,14 @@ Domus_dir = Domus_dir{1}
             % Efface le path cas plus nécessaire (copie locale)
             simulation.EPW.path = [];  
         
-        elseif strcmp(simulation.EPW.path, fullfile(Ep_dir,'WeatherData'))
+        elseif strcmp(simulation.EPW.path, fullfile(simulation.model_dir,'WeatherData'))
             % Efface le path cas plus nécessaire (version du répertoire de travail energyplus)
             simulation.EPW.path = [];
         end
     end
 end
 
-clear Ep_dir
+clear rep
 
 
 %% 1 Plan de simulation 
@@ -680,7 +675,7 @@ else
     else
         fprintf('Recherche des simulations inachevées.\n');
         % Test de la validité des simulations incorrectes
-        [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier,simulation.etats);
+        [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier,simulation.etats);
     end
     if any(simulation.etats>0)
         switch questdlg('Relprise d''une anayse !',sprintf('Conflit : %s', local.noms.etude),'Tout simuler','Tout tester','Reprise','Reprise')
@@ -722,9 +717,9 @@ else
                 % Test de la validité des simulations
                 
                 if any(simulation.etats>1) && strcmp('Oui',questdlg(sprintf('Voulez vous conserver les précédantes données extraites (%d/%d)?',sum(simulation.etats>1),length(simulation.etats)),sprintf('Conflit : %s', local.noms.etude),'Oui','Non','Oui'))
-                    [simulation.etats, simulation.time]= test_sim(params.model,params.rep_simul,params.liste_fichier,simulation.etats.*(simulation.etats>=2));
+                    [simulation.etats, simulation.time]= test_sim(simulation.model,params.rep_simul,params.liste_fichier,simulation.etats.*(simulation.etats>=2));
                 else
-                    [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier);
+                    [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier);
                 end                
                 % RAZ des simulations incorrectes
                 simulation.etats(simulation.etats==-1)=0;
@@ -751,16 +746,12 @@ else
     else
         % Lance les simulations dans des fenetres dos
         fprintf('Simulation.\n-> %d fichier(s) en %d lot(s).\n',nb_simul, min(nb_simul,local.nb_proc));
-        switch upper(params.model)
+        switch upper(simulation.model)
             case {'E+','EP','ENERGYPLUS'}
                 EplusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.auto_start);
             case {'DOMUS'}
                 % Les modifications appostées par Lais Lagos 
-                
-            % > you have to add the 'Domus_dir' in the function
-%                DomusMulti(params.rep_simul, local.IDF_dir ,local.nb_proc,local.auto_start);
-                error('Tem que definir o modelo !')
-        
+                DomusMulti(params.rep_simul, params.liste_fichier(id_simul,:) ,local.nb_proc,local.auto_start, simulation.model_dir);
             otherwise
                 error('Modele non reconnu')
         end
@@ -769,14 +760,14 @@ else
 
         if isfield(local, 'auto_start') && local.auto_start==false
             dos(sprintf('Explorer /e,/select,%s &',fullfile(params.rep_simul,'SimMulti.bat')));
-            error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.');
+            error('Fin de création des fichiers ''*.bat''. Veuilliez lancer les simulations.\rAppel direct:\rEPLab(''%s'')',fullfile(params.rep_result, 'config.m'));
         end
         
 
         % == Test (de fin) des simulations ==
         t = timer('StartDelay', 0, 'Period', local.test_delay, 'ExecutionMode', 'fixedDelay', 'TasksToExecute', 10^10);
         t.TimerFcn = { @test_fin, local.test_delay };
-        t.ErrorFcn = { @(~,~) disp('Oups') };
+        t.ErrorFcn = { @(~,~) disp('Oups Timer ErrorFcn') };
         fprintf('   Attente des résultats... (Ctr+c pour forcer le démarrage)\n');
         % barre_avancement('RAZ')
         affichage.nb_tir = nb_simul;
@@ -818,16 +809,16 @@ if (etape>4)
     fprintf('Utilisation des données formatées.\n');
 else
     
-    [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier,(simulation.etats>1)*2);
+    [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier,(simulation.etats>1)*2);
     
     % test des simulations pour l'extraction
-    [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier,(simulation.etats>1)*2);
+    [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier,(simulation.etats>1)*2);
     
     if any(simulation.etats>1)
         if strcmp('Oui',questdlg(sprintf('%d simulations sur %d sont déjà extraites. Réextraire tout ?',sum(simulation.etats>1),length(simulation.etats)),sprintf('Conflit : %s', local.noms.etude),'Oui','Non','Non'))
             % Réextraction : Test de la validité des simulations
             ancien_etats = simulation.etats;
-            [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier);
+            [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier);
             if any((simulation.etats<1) & (ancien_etats>1))
                 % Stop, certaine simulations sont manquante alors que leurs
                 % données ont déjà été extraites
@@ -865,7 +856,7 @@ else
 
     
     
-    switch upper(params.model)
+    switch upper(simulation.model)
         
         case {'E+','EP','ENERGYPLUS'}
         %% ENERGYPLUS
@@ -931,70 +922,52 @@ else
         case {'DOMUS'}
             %% DOMUS
             
-            error('Tem que definir o modelo !')
-  %{          
-            
-            % == Informations de base ==
-            % une simulation a t elle dégà été extraite ?
-            if ~any(simulation.etats>1)
-                fprintf('Extraction des informations générales\n');
-
-                % selection de la 1ere simulation valide
-                k = find(simulation.etats==1,1, 'first');
-
-                % Vecteurs temporels
-> you have to make your own   search 'Supported File Formats' in the documetation
-                dates = find_temps(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.csv',params.liste_fichier{k})));
-
-                % Enregistrement des données
-                save(fullfile(params.rep_result,'commun.mat'),'dates' )
-
-                clear k
-            end
-            
-           > you have at least 1 good simulation, you can active the next step (make this just one time) 
-            etape=5;
-            save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
-
-            
-            
-            % == Informations spécifiques ==
-            
             fprintf('Extraction des données de simulation\n');
             
-    > for each simulation id  with  etats==1       
+            [year,~,~,~,~,~] = datevec(now);        % Be careful with the leap years
+            if leapyear(year), warning('Be careful is a leap year. See: DomusExtract()'); end
+            clear year
+
             for id=find(simulation.etats==1)'
 
                 % Indice de la simulation étudiée
                 IDF_courant = params.liste_fichier{id};
-            
-> path of the results files
-                file =fullfile(params.rep_simul,sprintf('%1$s\\%1$s.csv',IDF_courant));
-
-> what must be done if a 'sim2' is here ????
-            
-            
-           >> for each datafile (you have to define these files !!!)
+                resPath = fullfile(params.rep_simul,['#' IDF_courant '.idf'],'saidas','sim001');
                 
-               > and read them
-                add datas into 'donnees'
-               'donnees' is a stucture !!!  search 'structures' in the documetation
+                resSimul = DomusExtract(resPath);
             
-           >>  end datafile loop
-            
-           > save thhe datas
-            save(fullfile(params.rep_result,[IDF_courant '.mat']),'donnees')
-            
-           > no error -> update the state of the current simuation 
-            simulation.etats(id)=2;   % 0=no extract /  1= simulation OK  / 2= simulation extracted
-           
-           > save the state of the current id
-            save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
-            
+                % Enregistrement des données
+                save(fullfile(params.rep_result,[IDF_courant '.mat']),'resSimul')
 
-            
-    end simulation id loop
-  %}          
+                if etape == 4
+                    sorties_ext = [];
+                    
+                    if isfield(resSimul,'TUP')
+                        dates.vec = resSimul.TUP.timeVec;
+                        dates.h = resSimul.TUP.timeNum;
+                    elseif isfield(resSimul,'pixelcount')
+                        dates.vec = resSimul.pixelcount.sunTimeVec;
+                        dates.h = resSimul.pixelcount.sunTimeNum;
+                    end
+                    dates.id_j_h1 = find(dates.vec(:,4)==1); %première heure du jour
+                    dates.id_j_h24 = find(~dates.vec(:,4)); %derniere heure du jour
+                    dates.j = datenum( dates.vec(dates.id_j_h1,:) );   %dates journalieres sous forme de nombre
+                    dates.nb_j=size(dates.j,1);    %Nombre de jours de simulation
+                    dates.nb_h=size(dates.h,1);    %Nombre d'heures de simulation
+
+                    % Enregistrement des données
+                    save(fullfile(params.rep_result,'commun.mat'),'geometrie','sorties_ext','dates' )
+                    
+                    etape=5;
+                    save(fullfile(params.rep_result,local.noms.save),'etape', '-append')
+                end
+                
+                simulation.etats(id)=2;
+                save(fullfile(params.rep_result,local.noms.save),'simulation', '-append')
+                
+                barre_avancement('PLUS')         
+            end  
+         
         otherwise
             error('Modele non reconnu')
     end
@@ -1025,8 +998,8 @@ else
     for k=1:length(resultat.plage)
         % Plage d'étude
         date = [ datenum(resultat.plage(k).debut, 'dd/mm');  
-                 datenum(resultat.plage(k).fin, 'dd/mm') ] + datenummx(0,0,0,dates.vec(1,4),dates.vec(1,5),dates.vec(1,6));
-
+                 datenum(resultat.plage(k).fin, 'dd/mm') ] + datenummx(0,0,0,1,0,0); % at 1H00
+        
         id_debut = find( dates.j==date(1) );
         id_fin = find( dates.j==date(2) );
         
@@ -1122,8 +1095,15 @@ else
         IDF_courant = params.liste_fichier{id};
         load(fullfile(params.rep_result,[IDF_courant '.mat']))
         
-        indicateurs=etude_indicateurs(resSimul,resultat.plage, resultat.range_temporal);
-     
+        switch upper(simulation.model)
+            case {'E+','EP','ENERGYPLUS'}
+                indicateurs=indicateursEP(resSimul,resultat.plage, resultat.range_temporal);
+                
+            case {'DOMUS'}
+                indicateurs=indicateursDMS(resSimul,resultat.plage, resultat.range_temporal);
+        end
+        
+        
         if isempty(liste_choix)
             % listing des noms présents dans la legende
             if resultat.range_temporal==0
@@ -1233,8 +1213,9 @@ if ~(etape>6)
     else
         % Recherche des sorties ayant une dispertion non négligeable
         resultat.sorties_valide = var(resultat.sorties)>=0.0001;
-        resultat.sorties_valide_index = find(resultat.sorties_valide);
-
+        resultat.sorties_valide_index = find(resultat.sorties_valide);        
+        if isempty(resultat.sorties_valide_index) error('No valid results.'), end
+        
         maxi=0;  for m=legende.sorties_all(resultat.sorties_valide)', maxi = max(maxi,length(m{:}));  end
         [selection,ok] = listdlg('Name', 'Sorties à étudier',...
                                 'PromptString','Sélection des sorties :',...
@@ -1316,7 +1297,7 @@ if local.images.export && resultat.range_temporal==0
         
         % Boucle sur les variables
         for i=1:params.variables.vars_nb
-            set(groot,'CurrentFigure',hFig);
+            try, set(groot,'CurrentFigure',hFig); end
 %            fprintf('paramètre: %d   //  sortie: %d\n%s\n',i,j,sprintf('%s - %s',legende.sorties_all{j},legende.vars{i,1}));
   
             % S'il n'y a pas d'entrée discrete
@@ -1502,7 +1483,7 @@ end
 
 %% 6 Appel de la fonction d'analyse
 
-% [simulation.etats, simulation.time] = test_sim(params.model,params.rep_simul,params.liste_fichier);
+% [simulation.etats, simulation.time] = test_sim(simulation.model,params.rep_simul,params.liste_fichier);
 % resultat.sorties= simulation.time;
 % resultat.sorties_valide = 1;
 

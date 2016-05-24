@@ -1,0 +1,813 @@
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:VERSAO ===========
+
+  Domus:Versao,
+    1.0;                      !- Identificador da versao
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:PROJETO ===========
+
+  Domus:Projeto,
+    Sem nome,                 !- Autor do projeto
+    Sem endereço,             !- Endereco do projeto
+    Breve descrição do projeto, !- Descricao do projeto
+    ,                         !- Nome da edificacao
+    1978,                     !- Ano da edificacao
+    2011;                     !- Ano do projeto
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:PARAMETROSGERAIS ===========
+
+  Domus:ParametrosGerais,
+    1,                        !- Tempo de simulacao - mes inicial
+    1,                        !- Tempo de simulacao - dia inicial
+    0,                        !- Tempo de simulacao - Hora inicial
+    0,                        !- Tempo de simulacao - Segundo inicial
+    1,                        !- Tempo de simulacao - mes final
+    31,                       !- Tempo de simulacao - dia final
+    23,                       !- Tempo de simulacao - Hora final
+    0,                        !- Tempo de simulacao - Segundo final
+    1,                        !- Tempo de relatorio - mes inicial
+    1,                        !- Tempo de relatorio - dia inicial
+    0,                        !- Tempo de relatorio - Hora inicial
+    0,                        !- Tempo de relatorio - Segundo inicial
+    1,                        !- Tempo de relatorio - mes final
+    31,                       !- Tempo de relatorio - dia final
+    23,                       !- Tempo de relatorio - Hora final
+    0,                        !- Tempo de relatorio - Segundo final
+    1,                        !- Ferias 1 - Ativada
+    0,                        !- Ferias 2 - Ativada
+    0,                        !- Ferias 3 - Ativada
+    1,                        !- Ferias 1 Inicio - Dia
+    1,                        !- Ferias 1 Inicio - Mes
+    1,                        !- Ferias 2 Inicio - Dia
+    7,                        !- Ferias 2 Inicio - Mes
+    1,                        !- Ferias 3 Inicio - Dia
+    10,                       !- Ferias 3 Inicio - Mes
+    31,                       !- Ferias 1 Fim - Dia
+    1,                        !- Ferias 1 Fim - Mes
+    15,                       !- Ferias 2 Fim - Dia
+    7,                        !- Ferias 2 Fim - Mes
+    15,                       !- Ferias 3 Fim - Dia
+    10,                       !- Ferias 3 Fim - Mes
+    3600,                     !- Warmup - passo de tempo normal
+    600,                      !- Warmup - passo de tempo fino
+    7,                        !- Warmup - dias - normal
+    1,                        !- Warmup - dias - fino
+    0,                        !- Warmup - com ajuste fino
+    0.01,                     !- Coeficiente convecao do solo
+    3600,                     !- Passo de tempo
+    2003,                     !- Ano da simulacao
+    0.02,                     !- Criterio de convergencia - temperatura
+    0.02,                     !- Criterio de convergencia - umidade
+    15,                       !- Numero maximo de iteracoes
+    0.2,                      !- Refletividade do solo
+    0,                        !- Constante do solo
+    20,                       !- Temperatura do solo
+    0.75,                     !- Umidade do solo
+    1,                        !- Solo adiabatico 
+    0,                        !- Habilita infiltracao
+    0,                        !- Habilita ventilacao natural
+    1.1614,                   !- Massa especifica do ar
+    Curitiba_b.dwf,           !- Arquivo climatico padrao
+    teste.sol,                !- Arquivo climatico do solo
+    0,                        !- Configuracao do Bestest
+    0,                        !- Repeticao de anos
+    0,                        !- Usar clima senoidal
+    20,                       !- Clima senoidal externo - temperatura media
+    5,                        !- Clima senoidal externo - amplitude pico anual temperatura
+    5,                        !- Clima senoidal externo - amplitude pico diaria temperatura
+    60,                       !- Clima senoidal externo - umidade media
+    10,                       !- Clima senoidal externo - amplitude pico diaria temperatura
+    1000,                     !- Clima senoidal externo - amplitude maxima anual radiacao
+    500,                      !- Clima senoidal externo - variacao amplitude pico radiacao
+    3,                        !- Ventilacao natural - modelo
+    0,                        !- Ventilacao natural - Tipo calculo do CP
+    2,                        !- Ventilacao natural - Indice do coeficiente A
+    2.5,                      !- Ventilacao natural - Altura das edificacoes ao redor
+    0,                        !- Ventilacao natural - Densidade de edificacoes ao redor
+    100,                      !- Grid 2D (interface velha)
+    0,                        !- Simular RTQ
+    0,                        !- RTQ
+    1,                        !- Zona bioclimatica
+    1,                        !- Utilizar contagem de pixels
+    2147483647,               !- Numero maximo de zonas simulaveis
+    6,                        !- Numero de feriados
+    0,                        !- Dia do ano do feriado 1
+    120,                      !- Dia do ano do feriado 2
+    249,                      !- Dia do ano do feriado 3
+    284,                      !- Dia do ano do feriado 4
+    305,                      !- Dia do ano do feriado 5
+    358;                      !- Dia do ano do feriado 6
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:NORTE ===========
+
+  Domus:Norte,
+    1,                        !- Coordenada x
+    0,                        !- Coordenada y
+    0;                        !- Coordenada z
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:ELEMENTODESENHO ===========
+
+  Domus:ElementoDesenho,
+    ElemDes_Sol,              !- Nome do objeto
+    1,                        !- Se a cor eh padrao
+    0,                        !- Valor do canal vermelho
+    0,                        !- Valor do canal verde
+    0,                        !- Valor do canal azul
+    1,                        !- Valor do canal alpha
+    ,                         !- Nome da cor
+    1;                        !- Se eh visivel 
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:FACE:PTF:VIDRO:R ===========
+
+  Domus:Face:PTF:Vidro:R,
+    PTF_Fenetre1,             !- Nome do objeto
+    0,                        !- Opcao de vidro (simples, duplo ou triplo)
+    1,                        !- Modelo do vidro (de acordo com base de dados)
+    0.84,                     !- Emissividade
+    0,                        !- Tela contra mosquito
+    0.74,                     !- Coeficientes de protecao solar
+    0.5,                      !- Espessura
+    1,                        !- Numero de camadas
+    Bloco Concreto (14 cm),   !- Material da camada
+    15,                       !- Numero de nos da camada
+    10;                       !- Espessura da camada
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:FACE:PTF ===========
+
+  Domus:Face:PTF,
+    PTF_Sol,                  !- Nome do objeto
+    0,                        !- Padrao de composicao
+    0.5,                      !- Absortividade interna
+    0.5,                      !- Absortividade externa
+    0.5,                      !- Emissividade interna
+    0.5,                      !- Emissividade externa
+    5e-07,                    !- Permeancia interna
+    5e-07,                    !- Permeancia externa
+    3,                        !- Numero de camadas
+    ACOUSTIC TILE,            !- Material da camada
+    19,                       !- Numero de nos da camada
+    19,                       !- Espessura da camada
+    Madeira (pinho),          !- Material da camada
+    3,                        !- Numero de nos da camada
+    1,                        !- Espessura da camada
+    HV.CONCRETE,              !- Material da camada
+    100,                      !- Numero de nos da camada
+    100;                      !- Espessura da camada
+
+  Domus:Face:PTF,
+    PTF_FaceNord,             !- Nome do objeto
+    0,                        !- Padrao de composicao
+    0.5,                      !- Absortividade interna
+    0.5,                      !- Absortividade externa
+    0.5,                      !- Emissividade interna
+    0.5,                      !- Emissividade externa
+    5e-07,                    !- Permeancia interna
+    5e-07,                    !- Permeancia externa
+    3,                        !- Numero de camadas
+    GYP,                      !- Material da camada
+    19,                       !- Numero de nos da camada
+    19,                       !- Espessura da camada
+    Madeira (pinho),          !- Material da camada
+    3,                        !- Numero de nos da camada
+    1,                        !- Espessura da camada
+    GYP,                      !- Material da camada
+    19,                       !- Numero de nos da camada
+    19;                       !- Espessura da camada
+
+  Domus:Face:PTF,
+    PTF_FaceSud,              !- Nome do objeto
+    0,                        !- Padrao de composicao
+    0.5,                      !- Absortividade interna
+    0.5,                      !- Absortividade externa
+    0.5,                      !- Emissividade interna
+    0.5,                      !- Emissividade externa
+    5e-07,                    !- Permeancia interna
+    5e-07,                    !- Permeancia externa
+    4,                        !- Numero de camadas
+    BRICK,                    !- Material da camada
+    101,                      !- Numero de nos da camada
+    101,                      !- Espessura da camada
+    INSULATION,               !- Material da camada
+    50,                       !- Numero de nos da camada
+    50,                       !- Espessura da camada
+    Madeira (pinho),          !- Material da camada
+    3,                        !- Numero de nos da camada
+    1,                        !- Espessura da camada
+    GYP,                      !- Material da camada
+    19,                       !- Numero de nos da camada
+    19;                       !- Espessura da camada
+
+  Domus:Face:PTF,
+    PTF_Toit,                 !- Nome do objeto
+    0,                        !- Padrao de composicao
+    0.5,                      !- Absortividade interna
+    0.5,                      !- Absortividade externa
+    0.5,                      !- Emissividade interna
+    0.5,                      !- Emissividade externa
+    5e-07,                    !- Permeancia interna
+    5e-07,                    !- Permeancia externa
+    3,                        !- Numero de camadas
+    HV.CONCRETE,              !- Material da camada
+    100,                      !- Numero de nos da camada
+    100,                      !- Espessura da camada
+    Madeira (pinho),          !- Material da camada
+    3,                        !- Numero de nos da camada
+    1,                        !- Espessura da camada
+    ACOUSTIC TILE,            !- Material da camada
+    19,                       !- Numero de nos da camada
+    19;                       !- Espessura da camada
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:FACE:RELATORIO ===========
+
+  Domus:Face:Relatorio,
+    Rel_Sol,                  !- Nome do objeto
+    0,                        !- Esta sendo monitorada
+    0,                        !- Monitora temperatura
+    0,                        !- Monitora umidade
+    0,                        !- Monitora pressao parcial vapor
+    0,                        !- Monitora fluxo calor
+    0,                        !- Monitora fluxo vapor
+    0,                        !- Monitora radiacoes
+    0;                        !- Monitora mofo
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:INTERVALOS:TEMPO ===========
+
+  Domus:Intervalos:Tempo,
+    Interv_Res_CT_Rel_zone,   !- Nome do objeto
+    1,                        !- Numero de intervalos
+    4,                        !- Periodo anual
+    7,                        !- Periodo semanal
+    0,                        !- Hora inicial
+    0,                        !- Segundo inicial
+    23,                       !- Hora final
+    59,                       !- Segundo final
+    366,                      !- Dia inicial
+    366;                      !- Dia final
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:PARAM ===========
+
+  Domus:Regiao:Param,
+    Param_zone,               !- Nome do objeto
+    0,                        !- Calcular coeficiente conveccao interno
+    0,                        !- Calcular coeficiente conveccao externo
+    1,                        !- Calcular coeficiente conveccao interno massa
+    1,                        !- Calcular coeficiente conveccao externo massa
+    3,                        !- Valor coeficiente conveccao interno
+    12,                       !- Valor coeficiente conveccao externo
+    0.00275,                  !- Valor coeficiente conveccao interno massa
+    0.00275,                  !- Valor coeficiente conveccao externo massa
+    0,                        !- Tipo de coeficiente (natural = 0, forcado = 1)
+    0,                        !- Velocidade do ar
+    0,                        !- Coeficiente de convec. interno A (Yazdanian e Klems)
+    1.49,                     !- Coeficiente de convec. interno C (Yazdanian e Klems)
+    0.345,                    !- Coeficiente de convec. interno n (Yazdanian e Klems)
+    0,                        !- Coeficiente de convec. externo A (Yazdanian e Klems)
+    0.84,                     !- Coeficiente de convec. externo C (Yazdanian e Klems)
+    0.333,                    !- Coeficiente de convec. externo n (Yazdanian e Klems)
+    0,                        !- Calcular coeficiente convec. interno YK
+    0,                        !- Calcular coeficiente convec. externo YK
+    0,                        !- Habilita a pre-simulacao
+    20,                       !- Temperatura inicial interna
+    50,                       !- Umidade inicial interna
+    0,                        !- Fixar temperatura inicial
+    0,                        !- Fixar umidade inicial
+    0,                        !- Controle da temp. e umidade da zona (livre=0)
+    0,                        !- Copiar temp. e umidade da zona
+    teste.ti,                 !- Arquivo climatico interno
+    5,                        !- Modelo de umidade
+    35,                       !- Grau de saturacao
+    1,                        !- Atualizacao das sombras (quantos passos de tempo)
+    6e+07,                    !- Residuo conveccao massa interna
+    6e+07,                    !- Residuo conveccao massa externo
+    20,                       !- Clima senoidal - temperatura media
+    5,                        !- Clima senoidal - amplitude pico anual
+    5,                        !- Clima senoidal - amplitude pico diaria
+    50,                       !- Clima senoidal - umidade media
+    10;                       !- Clima senoidal - amplitude pico diaria
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:RELATORIO:PMV_PPD ===========
+
+  Domus:Regiao:Relatorio:PMV_PPD,
+    PMVPPD_Rel_zone,          !- Nome do objeto
+    0,                        !- Tipo de atividade
+    0.66,                     !- Parametro - valor do clo
+    0.79,                     !- Parametro - tipo de atividade (met)
+    0.01,                     !- Parametro - velocidade do ar (m/s)
+    0,                        !- Vestimenta 1
+    0,                        !- Vestimenta 2
+    0,                        !- Vestimenta 3
+    0,                        !- Vestimenta 4
+    0,                        !- Vestimenta 5
+    0,                        !- Vestimenta 6
+    0,                        !- Vestimenta 7
+    0,                        !- Vestimenta 8
+    0,                        !- Vestimenta 9
+    0,                        !- Vestimenta 10
+    0,                        !- Vestimenta 11
+    0,                        !- Vestimenta 12
+    0,                        !- Vestimenta 13
+    0,                        !- Vestimenta 14
+    0,                        !- Vestimenta 15
+    0,                        !- Vestimenta 16
+    0,                        !- Vestimenta 17
+    0,                        !- Vestimenta 18
+    0,                        !- Vestimenta 19
+    0,                        !- Vestimenta 20
+    0;                        !- Vestimenta 21
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:RELATORIO:CT ===========
+
+  Domus:Regiao:Relatorio:CT,
+    CT_Rel_zone,              !- Nome do objeto
+    1,                        !- Ativar carga termica resfriamento
+    24,                       !- Temperatura desligamento resfriamento
+    50,                       !- Umidade desligamento resfriamento
+    1,                        !- Ativar carga termica aquecimento
+    22,                       !- Temperatura desligamento aquecimento
+    60,                       !- Umidade desligamento aquecimento
+    Interv_Res_CT_Rel_zone,   !- Intervalos de resfriamento
+    Interv_Res_CT_Rel_zone;   !- Intervalos de aquecimento
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:RELATORIO ===========
+
+  Domus:Regiao:Relatorio,
+    Rel_zone,                 !- Nome do objeto
+    1,                        !- Monitorar  zona
+    1,                        !- Monitorar temperatura
+    1,                        !- Monitorar umidade
+    0,                        !- Monitorar pmv e ppd
+    1,                        !- Monitorar consumo energia
+    0,                        !- Monitorar carga termica
+    0,                        !- Monitorar estatisticas
+    0,                        !- Monitorar mofo
+    0,                        !- Monitorar perfil paredes
+    0,                        !- Monitorar ganho termico
+    0,                        !- Monitorar ats
+    0,                        !- Monitorar ace
+    0,                        !- Monitorar sistemas primario/secundario
+    0,                        !- Monitorar fotovoltaico
+    0,                        !- Monitorar controlador
+    0,                        !- Monitorar acs
+    1,                        !- Monitorar propriedades edificacao
+    0,                        !- Monitorar temperatura interna paredes
+    3600,                     !- Amostragem - temperatura
+    3600,                     !- Amostragem - controlador
+    3600,                     !- Amostragem - perfil paredes
+    3600,                     !- Amostragem - periodo mofo
+    3600,                     !- Amostragem - fotovoltaico
+    3600,                     !- Amostragem - sistema primario/secundario
+    CT_Rel_zone,              !- Dados de carga termica	   
+    PMVPPD_Rel_zone;          !- Dados de de pmv e ppd
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:VENTILACAO ===========
+
+  Domus:Regiao:Ventilacao,
+    Vent_Regiaozone,          !- Nome do objeto
+    0,                        !- Habilita ventilacao natural
+    0,                        !- Modelo de ventilacao natural
+    0,                        !- Tipo de calculo do CP (0=CP medio parede, 1=pos. abertura)
+    0,                        !- Wind velocity profile exponent
+    0.0,                      !- Surrounding Building Height (m)
+    0.0,                      !- Plan Area Density (%)
+    0,                        !- Habilita ventilacao forcada
+    0,                        !- Tipo de calculo (1=por pessoas, 0=por trocas de ar)
+    0,                        !- Racao de ar ou trocas de ar
+    0,                        !- Quantidade de pessoas
+    ;                         !- Intervalos de tempo
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:DADOSRTQ ===========
+
+  Domus:DadosRTQ,
+    Sem Proprietario,         !- Proprietario
+    Sem nome,                 !- Nome
+    Sem endereço,             !- Endereco
+    Sem complemento,          !- Complemento
+    Sem cidade,               !- Cidade
+    Sem Zona Bioclimática,    !- Zona bioclimatica
+    Sem Bairro,               !- Bairro
+    Sem UF,                   !- Unidade da Federacao
+    Sem CEP,                  !- CEP
+    Sem data,                 !- Data
+    0,                        !- POC
+    0,                        !- Bonificacao 1
+    0,                        !- Bonificacao 2
+    0,                        !- Bonificacao 3
+    0,                        !- Bonificacao 4
+    0,                        !- Bonificacao 5
+    0;                        !- Bonificacao 6
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:REGIAO:ATIVIDADE ===========
+
+  Domus:Regiao:Atividade,
+    Ativ_zone,                !- Nome do objeto
+    0,                        !- Atividade principal
+    0,                        !- Transitoria
+    Zona padrão,              !- Nome da atividade
+    0.8,                      !- K limite
+    10.2,                     !- DPI A
+    12.24,                    !- DPI B
+    14.28,                    !- DPI C
+    16.32,                    !- DPI D
+    6;                        !- RCR
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:HVAC:MONIT:CONSUMO ===========
+
+  Domus:HVAC:Monit:Consumo,
+    0,                        !- Monitorar o sistema HVAC
+    3600,                     !- Passo tempo relatorios HVAC
+    0,                        !- Monitorar consumo sistema HVAC
+    0,                        !- Sistema primario - dado 1
+    0,                        !- Sistema primario - dado 2
+    0,                        !- Sistema primario - dado 3
+    0,                        !- Sistema primario - dado 4
+    0,                        !- Sistema primario - dado 5
+    0,                        !- Sistema primario - dado 6
+    1,                        !- Sistema primario - dado 7
+    0,                        !- Sistema primario - dado 8
+    0,                        !- Sistema primario - dado 9
+    Interv_Res_CT_Rel_zone,   !- Intervalos de resfriamento
+    Interv_Res_CT_Rel_zone;   !- Intervalos de aquecimento
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:MATERIAL ===========
+
+  Domus:Material,
+    ACOUSTIC TILE,            !- Nome do material
+    368,                      !- Densidade de matriz solida
+    0,                        !- Porosidade
+    590,                      !- Calor especifico
+    0.06,                     !- Condutibilidade termica
+    0,                        !- Tamanho do arquivo de isotermas
+    0,                        !- Granularidade das isotermas
+    null,                     !- Nome do arquivo de dados
+    null,                     !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    1;                        !- Origem do material
+
+  Domus:Material,
+    BRICK,                    !- Nome do material
+    1920,                     !- Densidade de matriz solida
+    0,                        !- Porosidade
+    790,                      !- Calor especifico
+    0.89,                     !- Condutibilidade termica
+    0,                        !- Tamanho do arquivo de isotermas
+    0,                        !- Granularidade das isotermas
+    null,                     !- Nome do arquivo de dados
+    null,                     !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    1;                        !- Origem do material
+
+  Domus:Material,
+    GYP,                      !- Nome do material
+    800,                      !- Densidade de matriz solida
+    0,                        !- Porosidade
+    1090,                     !- Calor especifico
+    0.16,                     !- Condutibilidade termica
+    0,                        !- Tamanho do arquivo de isotermas
+    0,                        !- Granularidade das isotermas
+    null,                     !- Nome do arquivo de dados
+    null,                     !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    1;                        !- Origem do material
+
+  Domus:Material,
+    HV.CONCRETE,              !- Nome do material
+    2240,                     !- Densidade de matriz solida
+    0,                        !- Porosidade
+    900,                      !- Calor especifico
+    1.95,                     !- Condutibilidade termica
+    0,                        !- Tamanho do arquivo de isotermas
+    0,                        !- Granularidade das isotermas
+    null,                     !- Nome do arquivo de dados
+    null,                     !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    1;                        !- Origem do material
+
+  Domus:Material,
+    INSULATION,               !- Nome do material
+    43,                       !- Densidade de matriz solida
+    0,                        !- Porosidade
+    1210,                     !- Calor especifico
+    0.03,                     !- Condutibilidade termica
+    0,                        !- Tamanho do arquivo de isotermas
+    0,                        !- Granularidade das isotermas
+    null,                     !- Nome do arquivo de dados
+    null,                     !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    1;                        !- Origem do material
+
+  Domus:Material,
+    Madeira (pinho),          !- Nome do material
+    510,                      !- Densidade de matriz solida
+    0.5,                      !- Porosidade
+    1380,                     !- Calor especifico
+    0.12,                     !- Condutibilidade termica
+    500,                      !- Tamanho do arquivo de isotermas
+    0.002,                    !- Granularidade das isotermas
+    Mad_Com.mat,              !- Nome do arquivo de dados
+    Mad_ComISO.mat,           !- Nome do arquivo de isotermas
+    0,                        !- Funcao isotermas
+    0;                        !- Origem do material
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:MATERIAIS ===========
+
+  Domus:Materiais,
+    6,                        !- Numero de materiais
+    ACOUSTIC TILE,            !- Nome do material
+    BRICK,                    !- Nome do material	  
+    GYP,                      !- Nome do material	  
+    HV.CONCRETE,              !- Nome do material
+    INSULATION,               !- Nome do material	  
+    Madeira (pinho);          !- Nome do material	  
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:FACEIDF ===========
+
+  Domus:FaceIDF,
+    Sol,                      !- Nome da face
+    Floor,                    !- Tipo de superficie
+    FLOOR,                    !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    NoSun,                    !- Exposicao ao sol
+    NoWind,                   !- Exposicao ao vento
+    0.0,                      !- Fator de forma para o solo
+    PTF_Sol,                  !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    0,                        !- Coordenada z
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    0;                        !- Coordenada z
+
+  Domus:FaceIDF,
+    FaceNord,                 !- Nome da face
+    Wall,                     !- Tipo de superficie
+    WALLINT,                  !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    NoSun,                    !- Exposicao ao sol
+    NoWind,                   !- Exposicao ao vento
+    0.0,                      !- Fator de forma para o solo
+    PTF_FaceNord,             !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5,                      !- Coordenada z
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    0,                        !- Coordenada z
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    0;                        !- Coordenada z
+
+  Domus:FaceIDF,
+    FaceOuest,                !- Nome da face
+    Wall,                     !- Tipo de superficie
+    WALLINT,                  !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    NoSun,                    !- Exposicao ao sol
+    NoWind,                   !- Exposicao ao vento
+    0.0,                      !- Fator de forma para o solo
+    PTF_FaceNord,             !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    0,                        !- Coordenada z
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    0;                        !- Coordenada z
+
+  Domus:FaceIDF,
+    FaceEst,                  !- Nome da face
+    Wall,                     !- Tipo de superficie
+    WALLINT,                  !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    NoSun,                    !- Exposicao ao sol
+    NoWind,                   !- Exposicao ao vento
+    0.0,                      !- Fator de forma para o solo
+    PTF_FaceNord,             !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5,                      !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    5.4,                      !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5;                      !- Coordenada z
+
+  Domus:FaceIDF,
+    FaceSud,                  !- Nome da face
+    Wall,                     !- Tipo de superficie
+    WALLEXT,                  !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    SunExposed,               !- Exposicao ao sol
+    WindExposed,              !- Exposicao ao vento
+    ,                         !- Fator de forma para o solo
+    PTF_FaceSud,              !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    0,                        !- Coordenada y
+    3.5,                      !- Coordenada z
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5;                      !- Coordenada z
+
+  Domus:FaceIDF,
+    Toit,                     !- Nome da face
+    Roof,                     !- Tipo de superficie
+    ROOF,                     !- Elemento construtivo
+    zone,                     !- Nome da zona
+    Outdoors,                 !- Condicao de contorno externa
+    ,                         !- Objeto da condicacao de contorno externa
+    NoSun,                    !- Exposicao ao sol
+    NoWind,                   !- Exposicao ao vento
+    0.0,                      !- Fator de forma para o solo
+    PTF_Toit,                 !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    Rel_Sol,                  !- Opcoes de relatorios
+    4,                        !- Numero de vertices
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    0,                        !- Coordenada z
+    0,                        !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5,                      !- Coordenada z
+    5.4,                      !- Coordenada x
+    2.7,                      !- Coordenada y
+    3.5;                      !- Coordenada z
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:ZONEIDF ===========
+
+  Domus:ZoneIDF,
+    zone,                     !- Nome da zona
+    0,                        !- Direcao relativa do norte
+    0,                        !- Coordenada X da origem {m}
+    0,                        !- Coordenada Y da origem {m}
+    0,                        !- Coordenada Z da origem {m}
+    0,                        !- Tipo
+    1,                        !- Multiplicador
+    0,                        !- Altura do teto {m}
+    51.03,                    !- Volume {m3}
+    0,                        !- Area do piso {m2}
+    ,                         !- Algoritmo de conveccao para interior da zona
+    ,                         !- Algoritmo de conveccao para exterior da zona
+    ,                         !- Parte da area total do piso
+    Param_zone,               !-  Referencia para os parametros da zona
+    Rel_zone,                 !-  Referencia para as configuracoes de relatorio
+    ,                         !-  Referencia para a mobilia
+    ,                         !-  Referencia para os ganhos internos
+    ,                         !-  Referencia para os equipamentos photo-voltaicos
+    ,                         !-  Referencia para os atuadores da zona
+    Vent_Regiaozone,          !-  Referencia para a ventilacao da zona
+    Ativ_zone;                !-  Referencia para as atividades da zona
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:FENESTRAIDF ===========
+
+  Domus:FenestraIDF,
+    Fenetre1,                 !- Nome da fenestra
+    Window,                   !- Tipo da superficie
+    SimpleGlazing,            !- Nome do elemento construtivo
+    FaceSud,                  !- Nome da parede mae
+    ,                         !- Objeto da condicacao de contorno externa
+    0,                        !- Fator de forma para o solo
+    ,                         !- Nome do controle de sombreamento       
+    ,                         !- Nome do quadro e divisor
+    0,                        !- Multiplicador
+    PTF_Fenetre1,             !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    0,                        !- Esquadria codigo cor
+    0,                        !- Esquadria codigo material
+    0.15,                     !- Area de esquadria
+    10,                       !- Transmitancia da esquadria
+    0,                        !- Absortividade da esquadria
+    0,                        !- Resistividade da esquadria
+    0,                        !- Emissividade da esquadria
+    100,                      !- Percentual de abertura
+    ,                         !- Intervalos de abertura
+    4,                        !- Numero de vertices
+    0,                        !- Coordenada x
+    2.6,                      !- Coordenada y
+    0.25,                     !- Coordenada z
+    0,                        !- Coordenada x
+    0.9,                      !- Coordenada y
+    0.25,                     !- Coordenada z
+    0,                        !- Coordenada x
+    0.9,                      !- Coordenada y
+    1.45,                     !- Coordenada z
+    0,                        !- Coordenada x
+    2.6,                      !- Coordenada y
+    1.45;                     !- Coordenada z
+
+  Domus:FenestraIDF,
+    Fenetre2,                 !- Nome da fenestra
+    Window,                   !- Tipo da superficie
+    SimpleGlazing,            !- Nome do elemento construtivo
+    FaceSud,                  !- Nome da parede mae
+    ,                         !- Objeto da condicacao de contorno externa
+    0,                        !- Fator de forma para o solo
+    ,                         !- Nome do controle de sombreamento       
+    ,                         !- Nome do quadro e divisor
+    0,                        !- Multiplicador
+    PTF_Fenetre1,             !- Referencia para as prop. termo-fisicas
+    ElemDes_Sol,              !- Referencia para as prop. de desenho
+    0,                        !- Esquadria codigo cor
+    0,                        !- Esquadria codigo material
+    0.15,                     !- Area de esquadria
+    10,                       !- Transmitancia da esquadria
+    0,                        !- Absortividade da esquadria
+    0,                        !- Resistividade da esquadria
+    0,                        !- Emissividade da esquadria
+    100,                      !- Percentual de abertura
+    ,                         !- Intervalos de abertura
+    4,                        !- Numero de vertices
+    0,                        !- Coordenada x
+    2.6,                      !- Coordenada y
+    2.05,                     !- Coordenada z
+    0,                        !- Coordenada x
+    0.9,                      !- Coordenada y
+    2.05,                     !- Coordenada z
+    0,                        !- Coordenada x
+    0.9,                      !- Coordenada y
+    3.25,                     !- Coordenada z
+    0,                        !- Coordenada x
+    2.6,                      !- Coordenada y
+    3.25;                     !- Coordenada z
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:PIXELCOUNTCONFIG ===========
+
+  Domus:PixelCountConfig,
+    7,                        !- Intervalo de dias
+    20,                       !- Intervalo de horas (em min)
+    512,                      !- Dimensao na horizontal
+    512,                      !- Dimensao na vertical
+    0,                        !- Metodo (1 (flag 0) ou 2 fases (flag 1))
+    -1;                       !- Passo de tempo do relatorio (-1 -> igual sim.)
+
+!-   ===========  ALL OBJECTS IN CLASS: DOMUS:SHADINGBUILDING ===========
+!$$ distancefenetre   +[4:3:13]
+!$$ longeur           -[7:3:10]
+!$$ depassement       -[6:3:9]
+!$$ depassement       +[12:3:15]
+  Domus:ShadingBuilding,
+    BriseSolaire1,            !- Nome
+    ,                         !- Transmitancia horaria       
+    4,                        !- Numero de vertices
+    -0.25,                    !- Coordenada x
+    2.6,                      !- Coordenada y
+    3.375,                    !- Coordenada z
+    -1.35,                    !- Coordenada x
+    2.6,                      !- Coordenada y
+    3.375,                    !- Coordenada z
+    -1.35,                    !- Coordenada x
+    2.6,                      !- Coordenada y
+    0.125,                    !- Coordenada z
+    -0.25,                    !- Coordenada x
+    2.6,                      !- Coordenada y
+    0.125;                    !- Coordenada z

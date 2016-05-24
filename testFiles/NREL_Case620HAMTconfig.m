@@ -214,9 +214,9 @@ local.recap_plan = true;    % compare les variations initiales aux variations du
 
 
 %% SIMULATION DEFINITION
-params.model = 'EnergyPlus';
+simulation.model = 'EnergyPlus';
 % Repertoire(s) d'instalation EnergyPlus (!! finir avec un '\' !!)
-Ep_dir = {'C:\EnergyPlusV8-3-0\',
+simulation.model_dir = {'C:\EnergyPlusV8-3-0\',
           'C:\EnergyPlusV8-4-0\',
           'C:\EnergyPlusV8-5-0\'
 };

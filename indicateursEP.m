@@ -1,4 +1,4 @@
-function indicateurs=etude_indicateurs(resSimul, plages, range_temporal)
+function indicateurs=indicateursEP(resSimul, plages, range_temporal)
 
 %global geometrie
 global legende
@@ -188,11 +188,11 @@ if ~range_temporal==0
         % legende.indicateurs(k).range_cond_neg =  {['Conduction face interne des surfaces Toiture neg ' plages(1).nom ' [kWh/m^2_(_t_o_i_t_)]']};
     end
 else
-  
-
+    
+    
     for k=1:length(plages)
-
-
+        
+        
     %% moyennes horaires
     % keyboard
     % plot(mean( reshape( resSimul.humdite.Tsurf_out{end}(plages(k).index_h),24,[] ) ,2))
@@ -205,8 +205,7 @@ else
 
 
     %% == Bilan aerolique ==
-
-
+    
     % == Bilan des échanges avec l'air: kWh par m2 habibable ==
     if isfield(resSimul,'bilan_air')
         indicateurs(k).bilan_air=[

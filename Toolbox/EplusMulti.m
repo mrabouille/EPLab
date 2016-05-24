@@ -49,7 +49,7 @@ end
 % SimMulti.bat
 fod = fopen(fullfile(rep,'SimMulti.bat'),'w');
 fprintf(fod, '@echo off\n');
-fprintf(fod, 'CD %s\n',rep);
+%fprintf(fod, 'CD %s\n',rep);
 for i=1:nb_proc
     fprintf(fid(i), 'EXIT\n');
     fclose(fid(i));

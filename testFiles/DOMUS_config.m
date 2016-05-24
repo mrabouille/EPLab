@@ -2,20 +2,20 @@
 EPLab_version = '1.8.1';
 
 % Study Name
-local.noms.etude = 'NREL-Case610-test';
+local.noms.etude = 'DomusTest';
 
 %% INPUT/OUTPUT DEFINITION
 % Nom du fichier idf de base. voir: modif_IDF()
-simulation.IDF_initial = 'NREL_Case610';
+simulation.IDF_initial = 'DomusTest';
 
 % Configuration statistique des variables d'entrées
 % type(var:1/param:0/off:-1), nom, loi(R=en relatif), [moyenne écrat]/val_par_def, [min max]/{'txt1' 'txt2'} 
 params.variables.infos = cell2struct(sortrows({
-                1, 'WallInsulThick', 'GaussianR', [0.066 10], []
-                1, 'FloorInsulResist', 'GaussianR', [25.075 10], []
-                1, 'RoofInsulThick', 'GaussianR', [0.1118 10], []
-                0, 'GroundReflec', 'GaussianR', [0.2 50], [0 1] 
-                1, 'WindowRatio', 'Gaussian', [0.9 0.1], [0 1]
+                1, 'distancefenetre','Uniform', [0 0.25], []; % valeur {m} 
+                1, 'longeur', 'Uniform', [0 0.9], []; % valeur {m}
+                -1, 'distanceinter', 'Uniform', [0 0.125], []; % valeur {m}
+                1, 'depassement', 'Uniform', [0 0.125], []; % valeur {m}
+                -1, 'reflectance', 'Uniform', [0.5 0.3], [];   %valeur {}
 },-1),...
 {'actif', 'nom' 'loi' 'moments' 'limites'}, 2);
 
@@ -23,24 +23,24 @@ params.variables.infos = cell2struct(sortrows({
 % Legende des variables
                 %Nom,       Label Long,     Label Court,	Unités
 local.vars_names=sortrows(	{
-                'WallInsulThick', 'Thickness of the Wall Insulation', 'Wall Insul. Thickness', '[m]';
-                'FloorInsulResist', 'Thermal Resistance of the Floor Insulation', 'Floor Insul. Resist.', '[m^2.K/W]';
-                'RoofInsulThick', 'Thickness of the Roof Insulation', 'Roof Insul. Thickness', '[m]';
-                'GroundReflec', 'Ground Reflectance value', 'Ground Reflec.', '[]'; 
-                'WindowRatio', 'Ratio of initial Window area', 'Window Size', '[]';
+                'distancefenetre', 'distancefenetre', 'distancefenetre',' [m]';
+                'longeur', 'longeur', 'longeur',' [m]'; 
+                'distanceinter', 'distanceinter', 'distanceinter',' [m]'; 
+                'depassement', 'depassement', 'depassement',' [m]'; 
+                'reflectance', 'reflectance', 'reflectance',' []';
 },3);
 
 
 % Configuration statistique des entrées météo
 % fichier 'unique' / multiples 'liste' / personalisé: 'plan' / appel module: 'module'           
-params.EPW_type = 'unique';
-params.EPW.copie = true;
+params.EPW_type = 'none';
+params.EPW.copie = false;
 
 switch params.EPW_type
     case 'unique'
-        simulation.EPW.name = {'USA_CO_Golden-NREL.724666_TMY3'};
+        simulation.EPW.name = {'USA_IL_Chicago-Midway.AP.725340_TMY3_3'};
         params.EPW.copie = true;
-%         simulation.EPW.path = 'D:\Documents\Fichier_meteo';
+        simulation.EPW.path = 'C:\Users\almeida.paula\Desktop\preliminar\preliminarEP';
     case 'liste'
         simulation.EPW.name = {'USA_WA_Seattle-Boeing.Field.727935_TMY3',
                                'SGP_Singapore.486980_IWEC'};
@@ -103,11 +103,11 @@ sorties = {
     -1,'%ZONE%:Zone Air Humidity Ratio [](Hourly)','donnees.zone.w(:,%ZONEID%)';
 
 	% Consomations Electriques
-	0,'Whole Building:Facility Total Purchased Electric Energy [J](Hourly)','donnees.E_elec_tot';
+	-1,'Whole Building:Facility Total Purchased Electric Energy [J](Hourly)','donnees.E_elec_tot';
 
 	% Consomations Systeme
-	1,'%ZONE%:Zone Air System Sensible Heating Rate [W](Hourly)','donnees.zone.E_heat.Sensible(:,%ZONEID%)';
-	1,'%ZONE%:Zone Air System Sensible Cooling Rate [W](Hourly)','donnees.zone.E_cool.Sensible(:,%ZONEID%)';
+	-1,'%ZONE%:Zone Air System Sensible Heating Rate [W](Hourly)','donnees.zone.E_heat.Sensible(:,%ZONEID%)';
+	-1,'%ZONE%:Zone Air System Sensible Cooling Rate [W](Hourly)','donnees.zone.E_cool.Sensible(:,%ZONEID%)';
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Sensible Heating Rate [W](Hourly)','donnees.zone.E_heat.Sensible(:,%ZONEID%)';
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Latent Heating Rate [W](Hourly)','donnees.zone.E_heat.Latent(:,%ZONEID%)';
 	-1,'%ZONE% IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Total Heating Rate [W](Hourly)','donnees.zone.E_heat.Total(:,%ZONEID%)';
@@ -126,6 +126,16 @@ sorties = {
 	-1,'%WINDOW%:Surface Window Heat Loss Energy [J](Daily)','donnees.surface.E_win_loss(:,%SURFID%)'; 
 	% part rayonnement (informatif)
 	-1,'%WINDOW%:Surface Window Transmitted Solar Radiation Energy [J](Daily)','donnees.surface.E_win_ray(:,%SURFID%)'; 
+    
+    %Estudo da MARGAUX
+    1,'MAIN:Daylighting Reference Point 1 Illuminance [lux](Hourly)','donnees.zone.D_1(:,1)';
+    1,'MAIN:Daylighting Reference Point 2 Illuminance [lux](Hourly)','donnees.zone.D_2(:,1)'; 
+    1,'LIGHT1:Lights Electric Power [W](Hourly)','donnees.zone.L_E_P(:,1)';
+   -1,'MAIN:DemandEndUseComponentsSummary [lux](Hourly)','donnees.zone.Demand(:,1)';
+    1,'MAIN IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Total Cooling Rate [W](Hourly)','donnees.zone.R_cool(:,1)';
+    1,'MAIN IDEAL LOADS AIR SYSTEM:Zone Ideal Loads Zone Total Heating Rate [W](Hourly)','donnees.zone.R_heat(:,1)';
+  
+    
 };
 
 
@@ -140,11 +150,13 @@ local.recap_plan = true;    % compare les variations initiales aux variations du
 
 
 %% SIMULATION DEFINITION
-simulation.model = 'EnergyPlus';
+simulation.model = 'DOMUS';
 % Repertoire(s) d'instalation EnergyPlus (!! finir avec un '\' !!)
 simulation.model_dir = {'C:\EnergyPlusV8-3-0\'
-                  'C:\EnergyPlusV8-4-0\'
-                  'C:\EnergyPlusV8-5-0\'
+          'C:\EnergyPlusV8-4-0\'
+          'C:\EnergyPlusV8-5-0\'
+          'C:\Program Files (x86)\Domus - Eletrobras'
+          'D:\DOMUS'
 };
 
 local.nb_proc=7;
@@ -156,7 +168,7 @@ local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de si
 %% OUTPUT SHAPING
 
 % Study ranges
-resultat.plage(1).nom = 'ColdMonth';
+resultat.plage(1).nom = 'Annual';
 resultat.plage(1).debut = '01/01';
 resultat.plage(1).fin = '31/01';
 
@@ -175,8 +187,8 @@ resultat.save_path = '';    % path or mat-file to save the values (several studi
 
 
 % Création des images  (Not for temporal analysis)
-local.images.export=false;      % active l'export entrées / sorties
-local.images.export2=false;     % active l'export sorties / sorties
+local.images.export=true;      % active l'export entrées / sorties
+local.images.export2=true;     % active l'export sorties / sorties
 
 local.images.colors=false;
 local.images.visible = 'off';   % affiche les courbes (ralenti)
@@ -191,7 +203,7 @@ local.images.markersize = 15;
 analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD / 5 sobol
 
 % Specific properties: RBDFAST
-% analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
+analyse.RBD.force=true;    % outrepasse les vérifications de l'analyses
 % analyse.RBD.harmonics=10;
 
 % Convergence graph
