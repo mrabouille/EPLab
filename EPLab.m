@@ -378,6 +378,17 @@ if etape<4
             % Copie RunEplus modifié dans le dossier de simulation
             modif_RunEplus(params.rep_simul, Ep_dir);
             
+            
+            % Test la presence de la ligne "Output:Surfaces:List, Details;"
+            % dans le fichier idf (necessaire a la lecture de la geometrie)
+            if isempty(  regexpi(fileread(IDF_dir), '(output\s*:\s*Surfaces\s*:\s*List\s*,\s*Details\s*;)') )
+                % Ligne absente, ajout de la ligne
+                fid = fopen(IDF_dir,'A');
+                fprintf(fid,'\nOutput:Surfaces:List, Details;\n');
+                fclose(fid);
+            end
+            
+            
         case {'DOMUS'}
 % Les modifications appostées par Lais Lagos             
 %{        
