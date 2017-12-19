@@ -45,6 +45,9 @@ nb_sorties=size(resultat.sorties,2);
 switch analyse.type_etude
     case 0  %Pas d'étude: affichage des résultats
         fprintf('Pas d''étude: affichage des résultats de la première simulation.\n');
+        
+        analyse.M=mean(resultat.sorties(:,resultat.sorties_valide),1);
+        analyse.V=var(resultat.sorties(:,resultat.sorties_valide),0,1);
         resultat.sorties(1,:)'
 
 
