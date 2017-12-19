@@ -248,64 +248,81 @@ else
         %|Si des modifications sont à prévoir |
         % ------------------------------------
         if ~isempty(pile)            
-            [ligne_val, ligne_com] = strtok(ligne);
+            [ligne_val, ligne_com] = strtok(ligne,'!');
+            ligne_val = strtrim(ligne_val);
             
             % La ligne est vide OU est un commentaire
-            if isempty(ligne_val) || ligne_val(1)=='!'
+            if isempty(ligne_val)
                 % Copie et passage à la ligne suivante sans décrémentation
                 fprintf(fod,'%s',ligne);
                 ligne = fgets(fid);
                 continue
             end
             
-            % Réalisation des changements
-            if (pile{1,1}==0)
-
-                % Recherche du caractère de fin , ou ;
-                char_fin = ligne_val(end);
-                while ~or( char_fin==',', char_fin==';')
-                    [ligne_1, ligne_com] = strtok(ligne_com);
-                    ligne_val = [ligne_val ' ' ligne_1];
-                    char_fin = ligne_val(end);
-                    if isempty (ligne_com)
-                        break
-                    end
-                end               
-                if ~isempty(ligne_com)
-                    while ligne_com(1)==' '
-                        ligne_com(1)=[];
-                    end
-                end
-                ligne_val(end)=[];
+            % decoupage en elements/ligne
+            [elements,separateurs] = regexp(ligne_val,'([,;])','split','tokens');
+            
+            % des changements sont-ils attendu dans cette ligne
+            if (size(elements,2)-2)<pile{1,1}
+                % NON pas encore, decrémentation des indices restant
+                pile(:,1) = num2cell(cell2mat(pile(:,1))-size(elements,2)+1);
+                % Copie et passage à la ligne suivante
+                fprintf(fod,'%s',ligne);
+                ligne = fgets(fid);
+                continue
+            else
+                % Des changement sont à prevoir
                 
-                % Traitement de la ligne en cours
-                while ~isempty(pile) && pile{1,1}==0
-                    if isempty(pile{1,3})
-                        ligne_val = pile{1,4};                    
-                    else  % Opération mathématique
-                        
-                        V = str2num(ligne_val);     % Valeur initiale de la ligne
-                        X = str2num(pile{1,4});     % Valeur echantillonne
-                        if isempty(V) || isempty(X)
-                            error(sprintf('Opération matématique impossible !\n Variable:\t''%s''\n Opération:\t''%s''\n Ligne:\t''%s''', pile{1,2}, strcat(ligne_val,pile{1,[3 4]}),ligne))
+                separateurs = [separateurs{:}];
+                
+                % Boucle sur tous les elements attendus
+                for el = 1:length(elements)-1
+                    
+                    %si operations sur l'element courrant
+                    while ~isempty(pile) && pile{1,1}==0
+                        if isempty(pile{1,3})
+                            elements(el) = pile(1,4);
+                        else  % Opération mathématique
+                            
+                            V = str2num(elements{el});     % Valeur initiale de la ligne
+                            X = str2num(pile{1,4});     % Valeur echantillonne
+                            if isempty(V) || isempty(X)
+                                error(sprintf('Opération matématique impossible !\n Variable:\t''%s''\n Opération:\t''%s''\n Ligne:\t''%s''', pile{1,2}, strcat(ligne_val,pile{1,[3 4]}),ligne))
+                            end
+                            elements{el} = num2str(eval( sprintf(pile{1,3},V,X) ));
                         end
-                        ligne_val = num2str( eval(sprintf(pile{1,3},V,X) ) );
+                        
+                        %opération réalisée 
+                        nb_rempl = nb_rempl + 1;  % Compte un remplacement
+                        pile(1,:) = [];           % Effacement de la pile
+                        
                     end
                     
-                    nb_rempl = nb_rempl + 1;  % Compte un remplacement
-                    pile(1,:) = [];           % Effacement de la pile
+                    if isempty(pile)
+                        %pile vide, fin de la boucle
+                        break
+                    elseif pile{1,1}>0
+                        %decrémentation des indices restant
+                        pile(:,1) = num2cell (cell2mat(pile(:,1))-1);
+                    end
+                    
                 end
-
+                
                 % Recomposition de la ligne modifiée
+                ligne_val = strjoin(elements,separateurs);
+                
+                % Mise en forme et ajout du commentaire
                 espaces='';
-                if length(ligne_val)< 24
+                if isempty(ligne_com)
+                    ligne = ['    ' ligne_val sprintf('\n')]; 
+                elseif length(ligne_val)< 24
                     espaces(1: (24-length(ligne_val)) ) = ' ';
-                    ligne = ['    ' ligne_val char_fin espaces ligne_com]; 
+                    ligne = ['    ' ligne_val espaces ligne_com]; 
                 elseif length(ligne_val)< 35
                     espaces(1: (35-length(ligne_val)) ) = ' ';
-                    ligne = ['    ' ligne_val char_fin espaces ligne_com]; 
+                    ligne = ['    ' ligne_val espaces ligne_com]; 
                 else
-                    fprintf(fod,'%s\n',['    ' ligne_val char_fin]);
+                    fprintf(fod,'%s\n',['    ' ligne_val]);
                     espaces(1:40) = ' ';
                     ligne = [espaces ligne_com]; 
                 end
@@ -313,8 +330,8 @@ else
             end   
             
             % Décrémentation des modifications restantes dans la pile
-            if ~isempty (pile)
-                if char_fin==';'
+            if ~isempty(pile)
+                if strcmp(separateurs{end},';')
                     error(sprintf('Variable:\t''%s'' --> Modification après la fin de l''object !\n ', pile{:,2}))
                 end 
                 
@@ -324,12 +341,10 @@ else
 %                     pause
 %                 end
 
-                %decrémentation des indices restant
-                pile(:,1) = num2cell (cell2mat(pile(:,1))-1);
             end
         end
         
-        fprintf(fod,'%s',ligne);
+        fprintf(fod,ligne);
         ligne = fgets(fid);
         
     end

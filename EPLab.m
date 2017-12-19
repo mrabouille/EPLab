@@ -374,7 +374,7 @@ if etape<4
             if ~str2double(simulation.version)>8
                 error('Old releases of EnergyPlus are not supported since V8\nVersion: %s', simulation.version)
             end
-            if str2double(simulation.version)>8.5
+            if str2double(simulation.version)>8.8
                 error('Version non configurée: ''%s''',simulation.version)
             end
             % Copie RunEplus modifié dans le dossier de simulation
@@ -818,7 +818,7 @@ else
     clear nb_simul id_simul
     
     if any(simulation.etats==-1)
-        id_err = find(simulation.etats==-1)
+        id_err = find(simulation.etats==-1);
         fprintf('ATTENTION !!! Les %d simulations suivantes se sont terminées avec des erreurs:\n', length(id_err));
         disp(id_err)
         clear id_err
