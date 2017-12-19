@@ -98,8 +98,15 @@ if ~exist('FileConfig','var')
     end
 else
     [LocalPath,FileConfig,ext] = fileparts(FileConfig);
-    FileConfig = [FileConfig,ext];
-    if isempty(LocalPath), LocalPath=pwd; end
+    if isempty(ext)
+        [FileConfig,LocalPath] = uigetfile(fullfile(LocalPath,FileConfig,'*config*.m')); %,'Select file to open',LocalPath
+        if isequal(FileConfig,0)
+            error('Arr�t par l''utilisateur.')
+        end
+    else
+        FileConfig = [FileConfig,ext];
+        if isempty(LocalPath), LocalPath=pwd; end
+    end
     clear ext
 end
 if ~exist(fullfile(LocalPath,FileConfig),'file')
