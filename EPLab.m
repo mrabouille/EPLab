@@ -571,34 +571,6 @@ if (etape>2)
     end
 else
 
-    % == Création des fichiers IDF ==
-    if isfield(params,'plan')
-        fprintf('Génération des fichiers idf.\n');
-
-        if size(params.plan,1) == 1 || params.variables.vars_nb==0
-            IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{1,1}));
-            modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(1,:),true,[]);
-
-            if params.nb_tir>1
-                IDF_dir = IDF_copie;
-                for i=2:params.nb_tir
-                    modif_IDF(IDF_dir,fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{i,1})));
-                    barre_avancement(i)
-                end   
-            end
-        else
-            for i=1:params.nb_tir
-                IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{i,1}));
-                modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(i,:),i==1,i);
-                barre_avancement(i)
-            end
-        end
-        clear IDF_base IDF_copie
-
-    else
-        error('Aucun plan de simulation trouvé');
-    end
-    
     % == Gestion des fichiers EPW ==
        
     switch params.EPW_type
@@ -628,7 +600,7 @@ else
        
         case 'plan'     %plan existant
                 
-            if analyse.type_etude~=0 % Une étude doit etre faite
+            if analyse.type_etude~=0 % Si une étude doit etre faite
                 if analyse.type_etude~=5
                     error('L''analyse avec variables METEO doit etre de type Sobol par groupe.')
                 end
@@ -660,6 +632,7 @@ else
             % Si il y a un plan on mélange les simulations
             if ~isfield(simulation.EPW,'plan')
                 simulation.EPW.plan = 1:length(simulation.EPW.name);
+                params.plan = simulation.EPW.plan;
             end
             for k = 1:params.nb_tir
                 params.liste_fichier(k,2) = {fullfile(simulation.EPW.path,simulation.EPW.name{simulation.EPW.plan(k)})};
@@ -679,6 +652,34 @@ else
             error('pas normal :(')
     end  
 
+    % == Création des fichiers IDF ==
+    if isfield(params,'plan')
+        fprintf('Génération des fichiers idf.\n');
+
+        if size(params.plan,1) == 1 || params.variables.vars_nb==0
+            IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{1,1}));
+            modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(1,:),true,[]);
+
+            if params.nb_tir>1
+                IDF_dir = IDF_copie;
+                for i=2:params.nb_tir
+                    modif_IDF(IDF_dir,fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{i,1})));
+                    barre_avancement(i)
+                end   
+            end
+        else
+            for i=1:params.nb_tir
+                IDF_copie = fullfile(params.rep_simul, sprintf('%s.idf',params.liste_fichier{i,1}));
+                modif_IDF( IDF_dir, IDF_copie, params.variables.infos(params.variables.actif),params.plan(i,:),i==1,i);
+                barre_avancement(i)
+            end
+        end
+        clear IDF_base IDF_copie
+
+    else
+        error('Aucun plan de simulation trouvé');
+    end
+    
     etape=3;
     save(fullfile(params.rep_result,local.noms.save))
 end
