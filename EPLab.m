@@ -296,6 +296,8 @@ if exist('INIT','var')  && INIT
     params.variables.params_nb = length(params.variables.params_index);
     params.variables.actif = sort([params.variables.vars_index, params.variables.params_index]);
     params.variables.actif_nb = length(params.variables.actif);
+    
+    if isempty(params.variables.actif), params.variables.actif=[]; end
 
     save(fullfile(params.rep_result,local.noms.save))
 end
@@ -897,7 +899,11 @@ else
                 k = find(simulation.etats==1,1, 'first');
 
                 % Surfaces et mise à jour des sorties
-                [geometrie, sorties_ext] = find_surface(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.eio',params.liste_fichier{k})), sorties);
+                if simulation.version>=8.8
+                    [geometrie, sorties_ext] = find_surfaceV2(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.eio',params.liste_fichier{k})), sorties);
+                else
+                    [geometrie, sorties_ext] = find_surface(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.eio',params.liste_fichier{k})), sorties);
+                end
 
                 % Vecteurs temporels
                 dates = find_temps(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.csv',params.liste_fichier{k})));
