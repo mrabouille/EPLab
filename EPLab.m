@@ -1046,6 +1046,31 @@ end
 if (etape>5)
     fprintf('Utilisation de la matrice de sortie.\n');
 else
+    fprintf('Choix des plages d''étude\n');
+    
+    liste_noms = {'Complet',resultat.plage.nom}' ;
+        maxi=0;  for m=liste_noms', maxi = max(maxi,length(m{:}));  end
+
+    [selection,ok] = listdlg('Name', 'Plages à étudier',...
+                            'PromptString','Sélection des plages :',...
+                            'SelectionMode','multiple',...
+                            'InitialValue', [2:length(liste_noms)],...
+                            'ListString',liste_noms,...
+                            'ListSize', [max(150,10+6*maxi) 15*(length(liste_noms)+1)]);
+    if ok==0
+        error('Arrêt par l''utilisateur.')
+    end
+    
+    % Ajout de la plage complette
+    if selection(1)==1
+        resultat.plage = [struct( 'nom', 'Complet',...
+                             'debut', datestr(dates.j(1), 'dd/mm'),...
+                             'fin', datestr(dates.j(end), 'dd/mm')), resultat.plage]
+    end
+    % Selection des plages
+    resultat.plage = resultat.plage(selection)
+    
+    
     fprintf('Lecture des plages d''étude\n');
     for k=1:length(resultat.plage)
         % Plage d'étude
@@ -1071,7 +1096,7 @@ else
                 'SelectionMode','multiple',...
                 'ListString', num2str([1:rep]','%d') ,...
                 'InitialValue',[rep],...  
-                'ListSize', [150 30+15*(rep-1)]);
+                'ListSize', [160 30+15*(rep-1)]);
             if ok==0
                 error('Arrêt par l''utilisateur.')
             end
@@ -1174,7 +1199,7 @@ else
                                         'PromptString','Sélection des sorties :',...
                                         'SelectionMode','multiple',...
                                         'ListString',liste_noms,...
-                                        'ListSize', [10+6*maxi 15*(length(liste_noms)+1)]);
+                                        'ListSize', [max(160,10+6*maxi) 15*(length(liste_noms)+1)]);
                 if ok==0
                     error('Arrêt par l''utilisateur.')
                 end
@@ -1265,7 +1290,7 @@ if ~(etape>6)
                                 'PromptString','Sélection des sorties :',...
                                 'SelectionMode','multiple',...       'InitialValue',[1 4 11 14],...  
                                 'ListString',legende.sorties_all(resultat.sorties_valide),...
-                                'ListSize', [10+6*maxi 15*(sum(resultat.sorties_valide)+1)]);
+                                'ListSize', [max(160,10+6*maxi) 15*(sum(resultat.sorties_valide)+1)]);
 
         if ok==0
             error('Arrêt par l''utilisateur.')
