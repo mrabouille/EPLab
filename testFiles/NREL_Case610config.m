@@ -11,11 +11,11 @@ simulation.IDF_initial = 'NREL_Case610';
 % Configuration statistique des variables d'entrées
 % type(var:1/param:0/off:-1), nom, loi(R=en relatif), [moyenne écrat]/val_par_def, [min max]/{'txt1' 'txt2'} 
 params.variables.infos = cell2struct(sortrows({
-                1, 'WallInsulThick', 'GaussianR', [0.066 10], []
-                1, 'FloorInsulResist', 'GaussianR', [25.075 10], []
-                1, 'RoofInsulThick', 'GaussianR', [0.1118 10], []
-                0, 'GroundReflec', 'GaussianR', [0.2 50], [0 1] 
-                1, 'WindowRatio', 'Gaussian', [0.9 0.1], [0 1]
+                1, 'WallInsulThick', 'GaussianR', [0.066 10], [0.01 0.2]
+                1, 'FloorInsulResist', 'GaussianR', [25.075 10], [20 30]
+                1, 'RoofInsulThick', 'GaussianR', [0.1118 10], [0.01 0.2]
+                0, 'GroundReflec', 'GaussianR', [0.2 50], [0.1 0.9] 
+                1, 'WindowRatio', 'Gaussian', [0.8 0.1], [0.6 0.95]
 },-1),...
 {'actif', 'nom' 'loi' 'moments' 'limites'}, 2);
 
@@ -133,7 +133,11 @@ sorties = {
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
 params.nb_tir=200;
 
-params.type_ech=4;      % 4:LHS-local 6:Halton_local 8:LPTau_local      //  1:random_global 3:RBD_global 5:LHS_global 7:Halton_global 9:LPTau_global  !!! global = [min max] of the 'limites' field & all uniform(used to find a solution)
+params.type_ech=10;     % 4:LHS-local 6:Halton_local 8:LPTau_local      
+                        % 1:random_global 3:RBD_global 5:LHS_global
+                        % 7:Halton_global 9:LPTau_global 10:MORIS_global
+                        % -->global = [min max] of the 'limites' field & all uniform(used to find a solution)
+
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 
 local.recap_plan = true;    % compare les variations initiales aux variations du plan 
@@ -147,7 +151,7 @@ Ep_dir = {'C:\EnergyPlusV8-3-0\'
           'C:\EnergyPlusV8-5-0\'
 };
 
-local.nb_proc=7;
+local.nb_proc=4;
 local.auto_start=true; 	% Demarre automatiquement les simulations
 local.test_delay=20;	% Intervale en sec. entre les tests sur les résultats de simulation
 
@@ -188,7 +192,7 @@ local.images.markersize = 15;
 
 %% SENSITIVITY ANALYSIS DEFINITION
 % type d'Analyse
-analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD / 5 sobol
+analyse.type_etude=6;  % 0 rien / 2 PCE_MetaModel / 3 RBD-FAST / 5 sobol / 6 MORIS
 
 % Specific properties: RBDFAST
 % analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses

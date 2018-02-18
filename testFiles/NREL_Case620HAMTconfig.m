@@ -207,7 +207,11 @@ sorties = {
 % Configuration de l'échantillonnage et de l'analyse (voir: commun_analyse() )
 params.nb_tir=400;
 
-params.type_ech=4;      % 1:random_global 3:RBD_global 4:LHS-local 5:LHS_global 6:Halton_local 7:Halton_global 8:LPTau_local  9:LPTau_global
+params.type_ech=4;     % 4:LHS-local 6:Halton_local 8:LPTau_local      
+                        % 1:random_global 3:RBD_global 5:LHS_global
+                        % 7:Halton_global 9:LPTau_global 10:MORIS_global
+                        % -->global = [min max] of the 'limites' field & all uniform(used to find a solution)
+                        
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
 
 local.recap_plan = true;    % compare les variations initiales aux variations du plan 
@@ -262,7 +266,7 @@ local.images.markersize = 15;
 
 %% SENSITIVITY ANALYSIS DEFINITION
 % type d'Analyse
-analyse.type_etude=3;  % 0 rien / 2 PC / 3 RBD  /  5 sobol
+analyse.type_etude=3;  % 0:rien 2:PCE_MetaModel 3:RBD-FAST 5:sobol 6:MORIS
 
 % Specific properties: RBDFAST
 % analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses

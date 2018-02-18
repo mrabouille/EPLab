@@ -141,9 +141,17 @@ switch params.type_ech
         if ~isfield(params,'MORIS_diag')
             params.MORIS_diag = false;         %graph de diag
         end
-        params.nb_tir = params.nb_tir + mod(params.nb_tir,params.variables.vars_nb+1);
-        if ~isfield(params,'MORIS_trajectories')
-            params.MORIS_trajectories = 10*params.nb_tir/(params.variables.vars_nb+1);   %initial set of traj to compute
+        
+        if ~isfield(params,'MORIS_finalTrajs')
+            params.nb_tir = params.nb_tir + mod(params.nb_tir,params.variables.vars_nb+1);
+            params.MORIS_finalTrajs = params.nb_tir/(params.variables.vars_nb+1)
+        else
+            params.nb_tir = params.MORIS_finalTrajs*(params.variables.vars_nb+1);
+        end
+        
+        
+        if ~isfield(params,'MORIS_initialTrajs')
+            params.MORIS_initialTrajs = 10*params.nb_tir/(params.variables.vars_nb+1);   %initial set of traj to compute
         end
         if ~isfield(params,'MORIS_levels')
             params.MORIS_levels = 4;           %number of levels for each input
@@ -156,7 +164,7 @@ switch params.type_ech
             error('Type de distribution ''Discret'' invalide !')
         end
         
-        params.MORIS_sampledTraj = Morris_Optimized_Groups(params.variables.vars_nb,params.MORIS_trajectories,params.MORIS_levels,params.nb_tir/(params.variables.vars_nb+1),params.MORIS_groupMat,params.MORIS_diag);
+        params.MORIS_sampledTraj = Morris_Optimized_Groups(params.variables.vars_nb,MORIS_initialTrajs,params.MORIS_levels,params.MORIS_finalTrajs,params.MORIS_groupMat,params.MORIS_diag);
         
         params.plan = zeros(size(params.MORIS_sampledTraj))
         for i=params.variables.vars_index
