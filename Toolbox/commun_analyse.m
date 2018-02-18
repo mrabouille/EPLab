@@ -196,7 +196,10 @@ switch analyse.type_etude
             analyse.SIbs_rbdfast_var = var(SIbs_rbdfast,0,3);
         end
         
-
+    case 4  %Random Balance Designs for temporal analysis
+        fprintf('-> Random Balance Designs - FAST.\n')
+        
+        
     case 5  %SOBOL
         fprintf('-> Indices de SOBOL.\n')
 
@@ -310,6 +313,27 @@ switch analyse.type_etude
                 end
 %}
         end
+        
+
+    case 6  %MORIS
+        fprintf('-> Screening MORIS - .\n')
+        
+        simulationValide = simulation.etats>=2;
+        if ~all(simulationValide)
+            %fitre les resultats valides par trajectoire
+            simulationValide = repmat(all(reshape(simulationValide,params.variables.vars_nb+1,[]),1),params.variables.vars_nb+1,1);
+            simulationValide=simulationValide(:);
+            
+        end
+        
+        [analyse.SAmeasurement_Morris, OutMatrix] = Morris_Measure_Groups(params.variables.vars_nb, params.MORIS_sampledTraj(simulationValide,:), resultat.sorties(simulationValide, resultat.sorties_valide), params.MORIS_levels, params.MORIS_groupMat);
+        
+        analyse.M=mean(resultat.sorties(:,resultat.sorties_valide),1);
+        analyse.V=var(resultat.sorties(:,resultat.sorties_valide),0,1);
+        analyse.AbsMu_Morris = OutMatrix(:,1);
+        analyse.Mu_Morris = OutMatrix(:,2);
+        analyse.StDev_Morris = OutMatrix(:,3);
+        
 end
 
 

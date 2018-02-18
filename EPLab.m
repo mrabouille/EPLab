@@ -899,7 +899,7 @@ else
                 k = find(simulation.etats==1,1, 'first');
 
                 % Surfaces et mise à jour des sorties
-                if simulation.version>=8.8
+                if str2double(simulation.version)>=8.8
                     [geometrie, sorties_ext] = find_surfaceV2(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.eio',params.liste_fichier{k})), sorties);
                 else
                     [geometrie, sorties_ext] = find_surface(fullfile(params.rep_simul,sprintf('%1$s\\%1$s.eio',params.liste_fichier{k})), sorties);

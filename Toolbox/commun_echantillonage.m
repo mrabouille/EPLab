@@ -131,6 +131,43 @@ switch params.type_ech
         end
         [params.plan,index]=pseudo_rand(method,params.nb_tir, params.variables.infos(params.variables.vars_index), false);
         
+        
+	case 10  % MORIS
+        fprintf('-> Screening MORIS (global -> uniforme).\n')
+        
+        if analyse.type_etude~=6
+            error('Le type d''étude doit correspondre à la méthode du Screening de MORIS.')
+        end
+        if ~isfield(params,'MORIS_diag')
+            params.MORIS_diag = false;         %graph de diag
+        end
+        params.nb_tir = params.nb_tir + mod(params.nb_tir,params.variables.vars_nb+1);
+        if ~isfield(params,'MORIS_trajectories')
+            params.MORIS_trajectories = 10*params.nb_tir/(params.variables.vars_nb+1);   %initial set of traj to compute
+        end
+        if ~isfield(params,'MORIS_levels')
+            params.MORIS_levels = 4;           %number of levels for each input
+        end
+        if ~isfield(params,'MORIS_groupMat')
+            params.MORIS_groupMat=[];      %group of inputs
+        end
+        
+        if any(strcmpi({params.variables.infos(params.variables.vars_index).loi}, 'Discret'))
+            error('Type de distribution ''Discret'' invalide !')
+        end
+        
+        params.MORIS_sampledTraj = Morris_Optimized_Groups(params.variables.vars_nb,params.MORIS_trajectories,params.MORIS_levels,params.nb_tir/(params.variables.vars_nb+1),params.MORIS_groupMat,params.MORIS_diag);
+        
+        params.plan = zeros(size(params.MORIS_sampledTraj))
+        for i=params.variables.vars_index
+            limites=params.variables.infos(i).limites;
+            if numel(limites)~=2
+                error('Les limites de la variable ''%s'' sont mal définies !',params.variables.infos(i).nom)
+            end
+            params.plan(:,i) = limites(1) + (limites(2)-limites(1))*params.MORIS_sampledTraj(:,i);
+        end
+        
+        
     otherwise
         error(sprintf('Echantillonage "%d" non défini.',params.type_ech))
 end
