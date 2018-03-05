@@ -132,47 +132,47 @@ switch params.type_ech
         [params.plan,index]=pseudo_rand(method,params.nb_tir, params.variables.infos(params.variables.vars_index), false);
         
         
-	case 10  % MORIS
-        fprintf('-> Screening MORIS (global -> uniforme).\n')
+	case 10  % MORRIS
+        fprintf('-> Screening MORRIS (global -> uniforme).\n')
         
         if analyse.type_etude~=6
-            error('Le type d''étude doit correspondre à la méthode du Screening de MORIS.')
+            error('Le type d''étude doit correspondre à la méthode du Screening de MORRIS.')
         end
-        if ~isfield(params,'MORIS_diag')
-            params.MORIS_diag = false;         %graph de diag
+        if ~isfield(params,'MORRIS_diag')
+            params.MORRIS_diag = false;         %graph de diag
         end
         
-        if ~isfield(params,'MORIS_finalTrajs')
+        if ~isfield(params,'MORRIS_finalTrajs')
             params.nb_tir = params.nb_tir + mod(params.nb_tir,params.variables.vars_nb+1);
-            params.MORIS_finalTrajs = params.nb_tir/(params.variables.vars_nb+1)
+            params.MORRIS_finalTrajs = params.nb_tir/(params.variables.vars_nb+1);
         else
-            params.nb_tir = params.MORIS_finalTrajs*(params.variables.vars_nb+1);
+            params.nb_tir = params.MORRIS_finalTrajs*(params.variables.vars_nb+1);
         end
         
         
-        if ~isfield(params,'MORIS_initialTrajs')
-            params.MORIS_initialTrajs = 10*params.nb_tir/(params.variables.vars_nb+1);   %initial set of traj to compute
+        if ~isfield(params,'MORRIS_initialTrajs')
+            params.MORRIS_initialTrajs = 10*params.MORRIS_finalTrajs;   %initial set of traj to compute
         end
-        if ~isfield(params,'MORIS_levels')
-            params.MORIS_levels = 4;           %number of levels for each input
+        if ~isfield(params,'MORRIS_levels')
+            params.MORRIS_levels = 4;           %number of levels for each input
         end
-        if ~isfield(params,'MORIS_groupMat')
-            params.MORIS_groupMat=[];      %group of inputs
+        if ~isfield(params,'MORRIS_groupMat')
+            params.MORRIS_groupMat=[];      %group of inputs size(NumFact,NumGroups)
         end
         
         if any(strcmpi({params.variables.infos(params.variables.vars_index).loi}, 'Discret'))
             error('Type de distribution ''Discret'' invalide !')
         end
         
-        params.MORIS_sampledTraj = Morris_Optimized_Groups(params.variables.vars_nb,MORIS_initialTrajs,params.MORIS_levels,params.MORIS_finalTrajs,params.MORIS_groupMat,params.MORIS_diag);
+        params.MORRIS_sampledTraj = Morris_Optimized_Groups(params.variables.vars_nb,params.MORRIS_initialTrajs,params.MORRIS_levels,params.MORRIS_finalTrajs,params.MORRIS_groupMat,params.MORRIS_diag);
         
-        params.plan = zeros(size(params.MORIS_sampledTraj))
+        params.plan = zeros(size(params.MORRIS_sampledTraj));
         for i=params.variables.vars_index
             limites=params.variables.infos(i).limites;
             if numel(limites)~=2
                 error('Les limites de la variable ''%s'' sont mal définies !',params.variables.infos(i).nom)
             end
-            params.plan(:,i) = limites(1) + (limites(2)-limites(1))*params.MORIS_sampledTraj(:,i);
+            params.plan(:,i) = limites(1) + (limites(2)-limites(1))*params.MORRIS_sampledTraj(:,i);
         end
         
         

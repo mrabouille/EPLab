@@ -164,7 +164,7 @@ switch analyse.type_etude
             steps = start:analyse.convergence_param.step:params.nb_tir; if rem(params.nb_tir-start,analyse.convergence_param.step)~=0, steps = [steps params.nb_tir]; end
             for k=1:length(steps)
                 Vsimple(k,:)=var(resultat.sorties(1:steps(k),analyse.convergence_param.output),0,1);
-                Msimple(k)=mean(resultat.sorties(1:steps(k),analyse.convergence_param.output),1);
+                Msimple(k,:)=mean(resultat.sorties(1:steps(k),analyse.convergence_param.output),1);
                 SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD.harmonics,[],resultat.sorties(1:steps(k),analyse.convergence_param.output),params.plan(1:steps(k),analyse.convergence_param.input));
             end
             figure
@@ -199,6 +199,27 @@ switch analyse.type_etude
     case 4  %Random Balance Designs for temporal analysis
         fprintf('-> Random Balance Designs - FAST.\n')
         
+        %faire un appel a RBD FAST (pour ne pas recoder
+        
+        % Code for Temporal analysis of RBD FAST
+        % See also end of EPLab\EPLab.m
+        if false
+            warning('Tambouille perso !!!!!!!!')
+            X = params.plan((simulation.etats>=2),1:params.variables.vars_nb);
+            for a=find(resultat.sorties_valide)
+                Y = resultat.sorties((simulation.etats>=2), a);
+
+                analyse.signe(:,a)=sign( robustfit(X,Y,[],[],'off') );
+
+            %     B=regress(Y,X)
+            %     C=glmfit(X,Y)
+            %     [A, B, C,  analyse.SI_rbdfast(:,a) ]
+            % 
+            %     mdl = fitlm(X,Y,'linear','RobustOpts','on');
+            %     analyse.signe(:,a)=sign( mdl.Coefficients.Estimate(2:end) );
+
+            end
+end 
         
     case 5  %SOBOL
         fprintf('-> Indices de SOBOL.\n')
@@ -315,8 +336,8 @@ switch analyse.type_etude
         end
         
 
-    case 6  %MORIS
-        fprintf('-> Screening MORIS - .\n')
+    case 6  %MORRIS
+        fprintf('-> Screening MORRIS - .\n')
         
         simulationValide = simulation.etats>=2;
         if ~all(simulationValide)
@@ -326,7 +347,7 @@ switch analyse.type_etude
             
         end
         
-        [analyse.SAmeasurement_Morris, OutMatrix] = Morris_Measure_Groups(params.variables.vars_nb, params.MORIS_sampledTraj(simulationValide,:), resultat.sorties(simulationValide, resultat.sorties_valide), params.MORIS_levels, params.MORIS_groupMat);
+        [analyse.SAmeasurement_Morris, OutMatrix] = Morris_Measure_Groups(params.variables.vars_nb, params.MORRIS_sampledTraj(simulationValide,:), resultat.sorties(simulationValide, resultat.sorties_valide), params.MORRIS_levels, params.MORRIS_groupMat);
         
         analyse.M=mean(resultat.sorties(:,resultat.sorties_valide),1);
         analyse.V=var(resultat.sorties(:,resultat.sorties_valide),0,1);
@@ -334,28 +355,72 @@ switch analyse.type_etude
         analyse.Mu_Morris = OutMatrix(:,2);
         analyse.StDev_Morris = OutMatrix(:,3);
         
+        if ~all(simulationValide)
+            warning('-> Convergence analysis not possible (yet) if incorrect simulation are present') 
+        elseif isfield(analyse,'convergence') &&  analyse.convergence
+            fprintf('-> Convergence analysis.\n')
+
+            if analyse.convergence_param.input==0
+                analyse.convergence_param.input = params.variables.vars_index;
+            end
+            if analyse.convergence_param.output==0
+                [~,IdMaxVar] = max(analyse.V);
+                analyse.convergence_param.output = find(cumsum(resultat.sorties_valide)==IdMaxVar, 1, 'first');
+            end
+            
+            % clear Vsimple Msimple AbsMu_Morris Mu_Morris StDev_Morris
+            %steps = reshape(1:params.nb_tir * simulationValide',params.variables.vars_nb+1,[])
+            steps = params.variables.vars_nb+1:params.variables.vars_nb+1:params.nb_tir;
+            
+            for k=1:length(steps)
+                Vsimple(k,:)=var(resultat.sorties(1:steps(k),analyse.convergence_param.output),0,1);
+                Msimple(k,:)=mean(resultat.sorties(1:steps(k),analyse.convergence_param.output),1);
+                %SI_rbdfast(k,:)=rbd_fast(1,1,analyse.RBD.harmonics,[],resultat.sorties(1:steps(k),analyse.convergence_param.output),params.plan(1:steps(k),analyse.convergence_param.input));
+                
+                [~, OutMatrix] = Morris_Measure_Groups(params.variables.vars_nb, params.MORRIS_sampledTraj(1:steps(k),:), resultat.sorties(1:steps(k), analyse.convergence_param.output), params.MORRIS_levels, params.MORRIS_groupMat);
+                AbsMu_Morris(k,:) = OutMatrix(analyse.convergence_param.input,1);
+                Mu_Morris(k,:) = OutMatrix(analyse.convergence_param.input,2);
+                StDev_Morris(k,:) = OutMatrix(analyse.convergence_param.input,3);
+            end
+            figure
+            plot(1:k,Vsimple/Vsimple(end),1:k,Msimple/Msimple(end))
+            axes(1) = gca;
+            legend({'Var / Final Var','Mean / Final Mean'} , 'Location','Best')
+            
+            if length(analyse.convergence_param.input)==1
+                figure
+                plot(1:k,AbsMu_Morris,':',1:k,Mu_Morris,'--',1:k,StDev_Morris,'-.')
+                axes(2) = gca;
+                legend(horzcat( strcat( {'AbsMu of ', 'Mu of ', 'StDev of '}', repmat(analyse.legende_entrees(analyse.convergence_param.input,1),3,1) )') , 'Location','SouthWest')
+            else
+                figure
+                plot(1:k,AbsMu_Morris)
+                axes(2) = gca;
+                legend(horzcat( strcat( repmat({'AbsMu of ' },params.variables.vars_nb,1), analyse.legende_entrees(analyse.convergence_param.input,1) )') , 'Location','Best')
+            
+                figure
+                plot(1:k,Mu_Morris)
+                axes(3) = gca;
+                legend(horzcat( strcat( repmat({'Mu of ' },params.variables.vars_nb,1), analyse.legende_entrees(analyse.convergence_param.input,1) )') , 'Location','Best')
+            
+                figure
+                plot(1:k,StDev_Morris)
+                axes(4) = gca;
+                legend(horzcat( strcat( repmat({'StDev of ' },params.variables.vars_nb,1), analyse.legende_entrees(analyse.convergence_param.input,1) )') , 'Location','Best')
+            end
+            
+            for ax = axes
+                xlabel(ax,'Number of trajectories')
+                if resultat.range_temporal==0
+                    title(ax, analyse.legende_sorties(analyse.convergence_param.output) )
+                else
+                    title(ax, analyse.legende_sorties_valide(analyse.convergence_param.output) )
+                end
+            end
+        end
 end
 
 
-% Code for Temporal analysis of RBD FAST
-% See also end of EPLab\EPLab.m
-if false
-    warning('Tambouille perso !!!!!!!!')
-    X = params.plan((simulation.etats>=2),1:params.variables.vars_nb);
-    for a=find(resultat.sorties_valide)
-        Y = resultat.sorties((simulation.etats>=2), a);
-
-        analyse.signe(:,a)=sign( robustfit(X,Y,[],[],'off') );
-
-    %     B=regress(Y,X)
-    %     C=glmfit(X,Y)
-    %     [A, B, C,  analyse.SI_rbdfast(:,a) ]
-    % 
-    %     mdl = fitlm(X,Y,'linear','RobustOpts','on');
-    %     analyse.signe(:,a)=sign( mdl.Coefficients.Estimate(2:end) );
-
-    end
-end 
 
 end
 

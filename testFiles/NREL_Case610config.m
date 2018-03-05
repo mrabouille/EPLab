@@ -135,7 +135,7 @@ params.nb_tir=200;
 
 params.type_ech=10;     % 4:LHS-local 6:Halton_local 8:LPTau_local      
                         % 1:random_global 3:RBD_global 5:LHS_global
-                        % 7:Halton_global 9:LPTau_global 10:MORIS_global
+                        % 7:Halton_global 9:LPTau_global 10:MORRIS_global
                         % -->global = [min max] of the 'limites' field & all uniform(used to find a solution)
 
 params.type_plan_LHS=1;     % 0:sans 1:minimean10 2:minimax10
@@ -192,7 +192,7 @@ local.images.markersize = 15;
 
 %% SENSITIVITY ANALYSIS DEFINITION
 % type d'Analyse
-analyse.type_etude=6;  % 0 rien / 2 PCE_MetaModel / 3 RBD-FAST / 5 sobol / 6 MORIS
+analyse.type_etude=6;  % 0 rien / 2 PCE_MetaModel / 3 RBD-FAST / 5 sobol / 6 MORRIS
 
 % Specific properties: RBDFAST
 % analyse.RBD.force=false;    % outrepasse les vérifications de l'analyses
